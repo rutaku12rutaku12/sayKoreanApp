@@ -37,7 +37,7 @@ class AdminStudyExceptionHandler {
             userMessage = "연관된 데이터가 있어 삭제할 수 없습니다.";
         }
 
-        // 클라이언트 메시지 반환
+        // 클라이언트 메시지 반환 뭐시꺵이
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userMessage);
     }
 }
