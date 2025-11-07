@@ -23,7 +23,7 @@ import java.util.Map;
 // [*] 예외 핸들러 : 전역으로도 사용 가능
 @Log4j2
 @RestControllerAdvice(assignableTypes = {AdminStudyController.class}) // 해당 컨트롤러에서만 적용
-class AdminStudyExceptionHandler {
+class AdminStudyExceptionHandler { //
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleRuntimeException(RuntimeException e) {
         // 로그 에러 개발자에게 반환
