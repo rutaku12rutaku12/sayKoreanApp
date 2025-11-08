@@ -9,6 +9,10 @@ public class CorsConfig implements WebMvcConfigurer{
     // 스프링 웹 MVC 설정 '구현'
     // (1) CORS 관련 매핑 설정
     @Override
+
+
+
+
     public void addCorsMappings(CorsRegistry registry) {
 //        registry.addMapping("/허용할 컨트롤러 URL")          : /** 넣으면 전체 허용
 //                .allowedOrigins("허용할 출처/도메인")        : * 모든출처
