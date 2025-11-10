@@ -1,4 +1,4 @@
 package web.model.repository;
 
-public class friendsRepository {
+public class FriendsRepository {
 }
