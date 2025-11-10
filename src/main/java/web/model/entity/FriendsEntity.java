@@ -1,4 +1,4 @@
 package web.model.entity;
 
-public class friendsEntity {
+public class FriendsEntity {
 }
