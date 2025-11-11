@@ -399,8 +399,8 @@ INSERT IGNORE INTO languages (langName) VALUES
 
 -- 1. GAME 데이터
 INSERT INTO game (gameTitle) VALUES
+('한글자모음받기'),
 ('한글수박게임'),
-('단어맞추기'),
 ('문장완성게임'),
 ('발음연습게임'),
 ('스피드퀴즈');
