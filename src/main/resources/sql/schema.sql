@@ -14,17 +14,28 @@
 -- [*] 외래키 체크 비활성화 (삭제 시)
 SET FOREIGN_KEY_CHECKS = 0;
 
--- [*] 기존 테이블 전체 삭제
+-- (가장 하위: 4단계 → 상위: 부모 순으로)
 DROP TABLE IF EXISTS ranking;
 DROP TABLE IF EXISTS testItem;
 DROP TABLE IF EXISTS test;
 DROP TABLE IF EXISTS audio;
 DROP TABLE IF EXISTS exam;
-DROP TABLE IF EXISTS attendance;
 DROP TABLE IF EXISTS study;
-DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS genre;
-DROP TABLE IF EXISTS loading;
+
+-- [App 테이블들]
+DROP TABLE IF EXISTS friend;
+DROP TABLE IF EXISTS pointLog;
+DROP TABLE IF EXISTS pointPolicy;
+DROP TABLE IF EXISTS chat;
+DROP TABLE IF EXISTS chatList;
+DROP TABLE IF EXISTS gameLog;
+DROP TABLE IF EXISTS game;
+
+-- [기초 테이블들]
+DROP TABLE IF EXISTS attendance;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS languages;
 
 -- [*] 외래키 체크 재활성화
 SET FOREIGN_KEY_CHECKS = 1;
@@ -233,6 +244,132 @@ CREATE TABLE IF NOT EXISTS ranking (
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_0900_ai_ci;
 
+  -- =====================================================================
+  -- App 설계 시작
+  -- =====================================================================
+
+-- =====================================================================
+-- 게임 관련 테이블
+-- =====================================================================
+
+-- 게임 테이블 (부모)
+CREATE TABLE IF NOT EXISTS game (
+  gameNo    INT          NOT NULL AUTO_INCREMENT,
+  gameTitle VARCHAR(50)  NOT NULL,
+  PRIMARY KEY (gameNo)
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci;
+
+-- 게임 기록 테이블 (자식 - FK: gameNo, userNo)
+CREATE TABLE IF NOT EXISTS gameLog (
+  gameLogNo      INT      NOT NULL AUTO_INCREMENT,
+  gameResult     INT      NOT NULL,
+  gameScore      INT      NOT NULL,
+  gameFinishedAt DATETIME NOT NULL DEFAULT NOW(),
+  userNo         INT      NOT NULL,
+  gameNo         INT      NOT NULL,
+  PRIMARY KEY (gameLogNo),
+  CONSTRAINT fk_gamelog_user
+    FOREIGN KEY (userNo) REFERENCES users(userNo)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_gamelog_game
+    FOREIGN KEY (gameNo) REFERENCES game(gameNo)
+    ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci;
+
+-- =====================================================================
+-- 채팅 관련 테이블
+-- =====================================================================
+
+-- 채팅방 테이블 (부모 - FK: userNo)
+CREATE TABLE IF NOT EXISTS chatList (
+  chatListNo    INT          NOT NULL AUTO_INCREMENT,
+  chatListTitle VARCHAR(100) NOT NULL,
+  chatListState INT          NOT NULL DEFAULT 1,
+  userNo        INT          NOT NULL,
+  PRIMARY KEY (chatListNo),
+  CONSTRAINT fk_chatlist_user
+    FOREIGN KEY (userNo) REFERENCES users(userNo)
+    ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci;
+
+-- 채팅 메시지 테이블 (자식 - FK: chatListNo, sendNo)
+CREATE TABLE IF NOT EXISTS chat (
+  messageNo   INT          NOT NULL AUTO_INCREMENT,
+  chatMessage VARCHAR(255) NOT NULL,
+  chatTime    DATETIME     NOT NULL DEFAULT NOW(),
+  chatListNo  INT          NOT NULL,
+  sendNo      INT          NOT NULL,
+  PRIMARY KEY (messageNo),
+  CONSTRAINT fk_chat_chatlist
+    FOREIGN KEY (chatListNo) REFERENCES chatList(chatListNo)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_chat_user
+    FOREIGN KEY (sendNo) REFERENCES users(userNo)
+    ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci;
+
+-- =====================================================================
+-- 포인트 관련 테이블
+-- =====================================================================
+
+-- 포인트 정책 테이블 (부모)
+CREATE TABLE IF NOT EXISTS pointPolicy (
+  pointNo     INT          NOT NULL AUTO_INCREMENT,
+  pointName   VARCHAR(255) NOT NULL,
+  updatePoint INT          NOT NULL,
+  PRIMARY KEY (pointNo)
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci;
+
+-- 포인트 기록 테이블 (자식 - FK: pointNo, userNo)
+CREATE TABLE IF NOT EXISTS pointLog (
+  pointLogNo INT      NOT NULL AUTO_INCREMENT,
+  updateDate DATETIME NOT NULL DEFAULT NOW(),
+  pointNo    INT      NOT NULL,
+  userNo     INT      NOT NULL,
+  PRIMARY KEY (pointLogNo),
+  CONSTRAINT fk_pointlog_policy
+    FOREIGN KEY (pointNo) REFERENCES pointPolicy(pointNo)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_pointlog_user
+    FOREIGN KEY (userNo) REFERENCES users(userNo)
+    ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci;
+
+-- =====================================================================
+-- 친구 관련 테이블
+-- =====================================================================
+
+-- 친구 테이블 (FK: offer(userNo), receiver(userNo))
+CREATE TABLE IF NOT EXISTS friend (
+  frenNo      INT      NOT NULL AUTO_INCREMENT,
+  frenStatus  INT      DEFAULT 0,
+  frenUpdateo DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
+  offer       INT      NOT NULL,
+  receiver    INT      NOT NULL,
+  PRIMARY KEY (frenNo),
+  CONSTRAINT fk_friend_offer
+    FOREIGN KEY (offer) REFERENCES users(userNo)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_friend_receiver
+    FOREIGN KEY (receiver) REFERENCES users(userNo)
+    ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci;
+
+
     select * from genre;
     select * from study;
     select * from exam;
@@ -243,3 +380,14 @@ CREATE TABLE IF NOT EXISTS ranking (
     select * from testItem;
     select * from ranking;
     select * from languages;
+    SELECT * FROM game;
+    SELECT * FROM gameLog;
+    SELECT * FROM chatList;
+    SELECT * FROM chat;
+    SELECT * FROM pointPolicy;
+    SELECT * FROM pointLog;
+    SELECT * FROM friend;
+
+
+
+
