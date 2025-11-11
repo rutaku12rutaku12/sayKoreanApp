@@ -4,8 +4,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
-import web.model.dto.AttendDto;
-import web.model.dto.RankingDto;
+import web.model.dto.user.AttendDto;
+import web.model.dto.common.RankingDto;
 
 import java.util.List;
 import java.util.Map;

@@ -3,10 +3,10 @@ package web.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import web.model.dto.ExamDto;
-import web.model.dto.GenreDto;
-import web.model.dto.LanguageDto;
-import web.model.dto.StudyDto;
+import web.model.dto.study.ExamDto;
+import web.model.dto.study.GenreDto;
+import web.model.dto.common.LanguageDto;
+import web.model.dto.study.StudyDto;
 import web.model.mapper.StudyMapper;
 
 import java.util.List;

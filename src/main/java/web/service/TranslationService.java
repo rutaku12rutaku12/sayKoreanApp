@@ -8,10 +8,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import web.model.dto.TestTranslationRequestDto;
-import web.model.dto.TranslatedDataDto;
-import web.model.dto.TranslatedTestDataDto;
-import web.model.dto.TranslationRequestDto;
+import web.model.dto.test.TestTranslationRequestDto;
+import web.model.dto.study.TranslatedDataDto;
+import web.model.dto.test.TranslatedTestDataDto;
+import web.model.dto.study.TranslationRequestDto;
 
 import java.io.IOException;
 import java.io.InputStream;

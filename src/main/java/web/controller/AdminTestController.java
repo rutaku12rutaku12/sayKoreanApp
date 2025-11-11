@@ -2,14 +2,14 @@ package web.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.aspectj.weaver.ast.Test;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import web.model.dto.TestDto;
-import web.model.dto.TestItemDto;
-import web.model.dto.TestTranslationRequestDto;
-import web.model.dto.TranslatedTestDataDto;
+import web.model.dto.test.TestDto;
+import web.model.dto.test.TestItemDto;
+import web.model.dto.test.TestTranslationRequestDto;
+import web.model.dto.test.TranslatedTestDataDto;
 import web.service.AdminTestService;
 import web.service.RomanizerService;
 import web.service.TranslationService;
@@ -17,7 +17,6 @@ import web.service.TranslationService;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 // [*] 예외 핸들러 : 전역으로도 사용 가능
 @Log4j2

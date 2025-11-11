@@ -10,8 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import web.model.dto.AttendDto;
-import web.model.dto.RankingDto;
+import web.model.dto.user.AttendDto;
+import web.model.dto.common.RankingDto;
 import web.service.AdminUserService;
 
 import java.io.ByteArrayOutputStream;

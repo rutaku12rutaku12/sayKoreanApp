@@ -1,9 +1,10 @@
-package web.model.dto;
+package web.model.dto.test;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import web.model.dto.study.AudioDto;
 
 import java.util.List;
 

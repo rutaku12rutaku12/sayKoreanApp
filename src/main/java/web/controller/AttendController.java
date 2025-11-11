@@ -6,10 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import web.model.dto.AttendDto;
+import web.model.dto.user.AttendDto;
 import web.service.AttendService;
 
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 
 @RestController

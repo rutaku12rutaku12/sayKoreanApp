@@ -3,7 +3,7 @@ package web.model.mapper;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
-import web.model.dto.AttendDto;
+import web.model.dto.user.AttendDto;
 
 import java.time.LocalDate;
 import java.util.List;
