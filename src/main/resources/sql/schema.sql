@@ -349,7 +349,7 @@ CREATE TABLE IF NOT EXISTS pointLog (
 CREATE TABLE IF NOT EXISTS friend (
   frenNo      INT      NOT NULL AUTO_INCREMENT,
   frenStatus  INT      DEFAULT 0,
-  frenUpdateo DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
+  frenUpdate DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   offer       INT      NOT NULL,
   receiver    INT      NOT NULL,
   PRIMARY KEY (frenNo),
