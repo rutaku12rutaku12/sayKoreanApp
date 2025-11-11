@@ -1,4 +1,4 @@
-package web.service;
+package web.service.admin;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -7,7 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 import web.model.dto.study.ExamDto;
 import web.model.dto.study.GenreDto;
 import web.model.dto.study.StudyDto;
-import web.model.mapper.AdminStudyMapper;
+import web.model.mapper.admin.AdminStudyMapper;
+import web.service.FileService;
 
 import java.io.IOException;
 import java.util.List;

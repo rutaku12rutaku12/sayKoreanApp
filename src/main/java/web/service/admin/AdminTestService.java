@@ -1,4 +1,4 @@
-package web.service;
+package web.service.admin;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -6,8 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import web.model.dto.study.ExamDto;
 import web.model.dto.test.TestDto;
 import web.model.dto.test.TestItemDto;
-import web.model.mapper.AdminStudyMapper;
-import web.model.mapper.AdminTestMapper;
+import web.model.mapper.admin.AdminStudyMapper;
+import web.model.mapper.admin.AdminTestMapper;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -1,4 +1,4 @@
-package web.model.mapper;
+package web.model.mapper.admin;
 
 import org.apache.ibatis.annotations.*;
 import web.model.dto.study.ExamDto;
