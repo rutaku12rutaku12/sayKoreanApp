@@ -9,6 +9,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 import static org.apache.tomcat.util.net.openssl.OpenSSLStatus.setName;
 
@@ -18,9 +23,29 @@ public class SecurityConfig {
 
     private final Oauth2SuccessHandler oauth2SuccessHandler;
 
+    // ★ Flutter Web용 CORS 허용 (포트 고정해서 넣으세요: --web-port 5173)
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration cfg = new CorsConfiguration();
+//        cfg.setAllowedOrigins(List.of(
+//                "http://localhost:5173",
+//                "http://127.0.0.1:5173"
+//        ));
+//        cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+//        cfg.setAllowedHeaders(List.of("*"));
+//        // 세션/쿠키 쓰면 true, 토큰만 쓰면 false 권장
+//        cfg.setAllowCredentials(true);
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", cfg);
+//        return source;
+//    }
+
     // 시큐리티 필터 커스텀
     @Bean
     public SecurityFilterChain filterChain( HttpSecurity http ) throws Exception{
+
+
 
         // HTTP 요청에 따른 권한 커스텀 , 모든 권한 허용
         http.authorizeHttpRequests(auth -> auth
