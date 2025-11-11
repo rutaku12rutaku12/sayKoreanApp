@@ -5,8 +5,8 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import web.model.dto.RankingDto;
-import web.model.dto.TestDto;
+import web.model.dto.common.RankingDto;
+import web.model.dto.test.TestDto;
 import web.service.TestService;
 
 import java.util.List;

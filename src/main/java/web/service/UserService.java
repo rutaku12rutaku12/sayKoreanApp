@@ -1,15 +1,13 @@
 package web.service;
 
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.User;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Update;
+
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import web.model.dto.*;
+
+import web.model.dto.user.*;
 import web.model.mapper.UserMapper;
 
 import java.util.Random;

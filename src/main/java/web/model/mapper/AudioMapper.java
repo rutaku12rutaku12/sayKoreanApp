@@ -1,7 +1,7 @@
 package web.model.mapper;
 
 import org.apache.ibatis.annotations.*;
-import web.model.dto.AudioDto;
+import web.model.dto.study.AudioDto;
 
 import java.util.List;
 

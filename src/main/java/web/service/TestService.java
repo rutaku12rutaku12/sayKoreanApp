@@ -3,10 +3,10 @@ package web.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import web.model.dto.ExamDto;
-import web.model.dto.RankingDto;
-import web.model.dto.TestDto;
-import web.model.dto.TestItemWithMediaDto;
+import web.model.dto.study.ExamDto;
+import web.model.dto.common.RankingDto;
+import web.model.dto.test.TestDto;
+import web.model.dto.test.TestItemWithMediaDto;
 import web.model.mapper.TestMapper;
 
 import java.util.ArrayList;

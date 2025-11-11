@@ -1,15 +1,13 @@
 package web.service;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.ibatis.jdbc.SQL;
+
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import web.model.dto.AttendDto;
+import web.model.dto.user.AttendDto;
 import web.model.mapper.AttendMapper;
 
-import java.sql.SQLIntegrityConstraintViolationException;
-import java.time.LocalDate;
 import java.util.List;
 
 @Service

@@ -1,4 +1,4 @@
-package web.model.dto;
+package web.model.dto.test;
 
 import lombok.*;
 

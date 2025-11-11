@@ -1,7 +1,13 @@
 package web.model.mapper;
 
 import org.apache.ibatis.annotations.*;
-import web.model.dto.*;
+
+import web.model.dto.common.RankingDto;
+import web.model.dto.study.AudioDto;
+import web.model.dto.study.ExamDto;
+import web.model.dto.test.TestDto;
+import web.model.dto.test.TestItemWithMediaDto;
+
 import java.util.List;
 
 /*

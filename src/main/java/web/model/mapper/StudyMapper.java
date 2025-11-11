@@ -2,10 +2,10 @@ package web.model.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
-import web.model.dto.ExamDto;
-import web.model.dto.GenreDto;
-import web.model.dto.LanguageDto;
-import web.model.dto.StudyDto;
+import web.model.dto.study.ExamDto;
+import web.model.dto.study.GenreDto;
+import web.model.dto.common.LanguageDto;
+import web.model.dto.study.StudyDto;
 
 import java.util.List;
 

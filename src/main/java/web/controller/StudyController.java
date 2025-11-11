@@ -4,10 +4,10 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import web.model.dto.ExamDto;
-import web.model.dto.GenreDto;
-import web.model.dto.LanguageDto;
-import web.model.dto.StudyDto;
+import web.model.dto.study.ExamDto;
+import web.model.dto.study.GenreDto;
+import web.model.dto.common.LanguageDto;
+import web.model.dto.study.StudyDto;
 import web.service.StudyService;
 
 import java.util.List;

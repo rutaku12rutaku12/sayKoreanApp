@@ -1,8 +1,8 @@
 package web.model.mapper;
 
 import org.apache.ibatis.annotations.*;
-import web.model.dto.TestDto;
-import web.model.dto.TestItemDto;
+import web.model.dto.test.TestDto;
+import web.model.dto.test.TestItemDto;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package web.model.mapper;
 
 import org.apache.ibatis.annotations.*;
-import web.model.dto.RankingDto;
+import web.model.dto.common.RankingDto;
 
 import java.util.List;
 import java.util.Map;

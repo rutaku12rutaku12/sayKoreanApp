@@ -6,8 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import web.model.dto.AudioDto;
-import web.model.dto.TtsRequestDto;
+import web.model.dto.study.AudioDto;
+import web.model.dto.study.TtsRequestDto;
 import web.service.AudioService;
 import web.service.TranslationService;
 

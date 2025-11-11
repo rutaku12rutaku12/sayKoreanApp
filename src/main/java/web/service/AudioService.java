@@ -5,7 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import web.model.dto.AudioDto;
+import web.model.dto.study.AudioDto;
 import web.model.mapper.AudioMapper;
 
 import java.io.IOException;
