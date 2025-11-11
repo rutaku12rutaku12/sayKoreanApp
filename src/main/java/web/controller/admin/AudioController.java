@@ -1,4 +1,4 @@
-package web.controller;
+package web.controller.admin;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -8,8 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import web.model.dto.study.AudioDto;
 import web.model.dto.study.TtsRequestDto;
-import web.service.AudioService;
-import web.service.TranslationService;
+import web.service.admin.AudioService;
+import web.service.admin.TranslationService;
 
 import java.io.IOException;
 import java.util.List;

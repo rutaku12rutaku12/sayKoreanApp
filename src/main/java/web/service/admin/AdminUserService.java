@@ -1,11 +1,11 @@
-package web.service;
+package web.service.admin;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import web.model.dto.user.AttendDto;
 import web.model.dto.common.RankingDto;
-import web.model.mapper.AdminUserMapper;
+import web.model.mapper.admin.AdminUserMapper;
 
 import java.util.List;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package web.controller;
+package web.controller.admin;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -10,9 +10,9 @@ import web.model.dto.test.TestDto;
 import web.model.dto.test.TestItemDto;
 import web.model.dto.test.TestTranslationRequestDto;
 import web.model.dto.test.TranslatedTestDataDto;
-import web.service.AdminTestService;
-import web.service.RomanizerService;
-import web.service.TranslationService;
+import web.service.admin.AdminTestService;
+import web.service.admin.RomanizerService;
+import web.service.admin.TranslationService;
 
 import java.io.IOException;
 import java.util.List;
