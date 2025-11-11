@@ -6,9 +6,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data@AllArgsConstructor@NoArgsConstructor@Builder
-public class ChattingDto {
+public class MessageDto {
+    private int messageNo;
+    private String chatMessage;
+    private String chatTime;
     private int chatListNo;
-    private String chatListTitle;
-    private int chatListState;
-    private int userNo;
+    private int sendNo;
 }
