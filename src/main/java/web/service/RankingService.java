@@ -3,7 +3,7 @@ package web.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import web.model.dto.RankingDto;
+import web.model.dto.common.RankingDto;
 import web.model.mapper.RankingMapper;
 
 import java.util.List;

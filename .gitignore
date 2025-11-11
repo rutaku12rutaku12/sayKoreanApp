@@ -54,3 +54,4 @@ src/main/resources/env.app.json
 
 ### 다국어 json ###
 !src/main/resources/i18n/
+/src/main/resources/

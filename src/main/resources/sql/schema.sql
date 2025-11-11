@@ -249,19 +249,17 @@ CREATE TABLE IF NOT EXISTS ranking (
   -- =====================================================================
 
 -- =====================================================================
--- 게임 관련 테이블
+-- 게임 관련 테이블 JPA 쓸 거라서 추석처리
 -- =====================================================================
 
--- 게임 테이블 (부모)
+---- 게임 테이블 (부모)
 CREATE TABLE IF NOT EXISTS game (
   gameNo    INT          NOT NULL AUTO_INCREMENT,
   gameTitle VARCHAR(50)  NOT NULL,
   PRIMARY KEY (gameNo)
-) ENGINE=InnoDB
-  DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_0900_ai_ci;
+);
 
--- 게임 기록 테이블 (자식 - FK: gameNo, userNo)
+---- 게임 기록 테이블 (자식 - FK: gameNo, userNo)
 CREATE TABLE IF NOT EXISTS gameLog (
   gameLogNo      INT      NOT NULL AUTO_INCREMENT,
   gameResult     INT      NOT NULL,
@@ -276,9 +274,7 @@ CREATE TABLE IF NOT EXISTS gameLog (
   CONSTRAINT fk_gamelog_game
     FOREIGN KEY (gameNo) REFERENCES game(gameNo)
     ON UPDATE CASCADE ON DELETE CASCADE
-) ENGINE=InnoDB
-  DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_0900_ai_ci;
+);
 
 -- =====================================================================
 -- 채팅 관련 테이블
@@ -326,9 +322,7 @@ CREATE TABLE IF NOT EXISTS pointPolicy (
   pointName   VARCHAR(255) NOT NULL,
   updatePoint INT          NOT NULL,
   PRIMARY KEY (pointNo)
-) ENGINE=InnoDB
-  DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_0900_ai_ci;
+);
 
 -- 포인트 기록 테이블 (자식 - FK: pointNo, userNo)
 CREATE TABLE IF NOT EXISTS pointLog (
@@ -355,7 +349,7 @@ CREATE TABLE IF NOT EXISTS pointLog (
 CREATE TABLE IF NOT EXISTS friend (
   frenNo      INT      NOT NULL AUTO_INCREMENT,
   frenStatus  INT      DEFAULT 0,
-  frenUpdateo DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
+  frenUpdate DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   offer       INT      NOT NULL,
   receiver    INT      NOT NULL,
   PRIMARY KEY (frenNo),

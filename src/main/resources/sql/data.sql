@@ -399,8 +399,8 @@ INSERT IGNORE INTO languages (langName) VALUES
 
 -- 1. GAME 데이터
 INSERT INTO game (gameTitle) VALUES
+('한글자모음받기'),
 ('한글수박게임'),
-('단어맞추기'),
 ('문장완성게임'),
 ('발음연습게임'),
 ('스피드퀴즈');
@@ -551,7 +551,7 @@ INSERT INTO pointLog (updateDate, pointNo, userNo) VALUES
 ('2025-11-02 13:30:00', 10, 29);
 
 -- 7. FRIEND 데이터 (30개)
-INSERT INTO friend (frenStatus, frenUpdateo, offer, receiver) VALUES
+INSERT INTO friend (frenStatus, frenUpdate, offer, receiver) VALUES
 (1, '2025-11-01 10:00:00', 1, 2),
 (1, '2025-11-01 10:15:00', 1, 3),
 (0, '2025-11-01 10:30:00', 2, 4),
@@ -593,8 +593,8 @@ select * from test;
 select * from testItem;
 select * from ranking;
 select * from languages;
-SELECT * FROM game;
-SELECT * FROM gameLog;
+--SELECT * FROM game;
+--SELECT * FROM gameLog;
 SELECT * FROM chatList;
 SELECT * FROM chat;
 SELECT * FROM pointPolicy;

@@ -1,7 +1,8 @@
 package web.model.mapper;
 
 import org.apache.ibatis.annotations.*;
-import web.model.dto.*;
+
+import web.model.dto.user.*;
 
 @Mapper
 public interface UserMapper {

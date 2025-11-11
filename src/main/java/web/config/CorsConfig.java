@@ -20,7 +20,7 @@ public class CorsConfig implements WebMvcConfigurer{
 //                .allowCredentials(true);                 : HTTP 인증(세션 유지) 허용
 //                .allowedHeaders("*");                    : HTTP 헤더 정보 허용
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000", "http://localhost:5173" , "http://localhost:5174")
+                .allowedOriginPatterns("*") // 오류발생하여 (allowedOrigins) 대신 사용
                 .allowedMethods("GET","POST","PUT","DELETE")
                 .allowCredentials(true)
                 .allowedHeaders("*");
