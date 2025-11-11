@@ -551,7 +551,7 @@ INSERT INTO pointLog (updateDate, pointNo, userNo) VALUES
 ('2025-11-02 13:30:00', 10, 29);
 
 -- 7. FRIEND 데이터 (30개)
-INSERT INTO friend (frenStatus, frenUpdateo, offer, receiver) VALUES
+INSERT INTO friend (frenStatus, frenUpdate, offer, receiver) VALUES
 (1, '2025-11-01 10:00:00', 1, 2),
 (1, '2025-11-01 10:15:00', 1, 3),
 (0, '2025-11-01 10:30:00', 2, 4),

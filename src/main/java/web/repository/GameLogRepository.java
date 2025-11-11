@@ -17,7 +17,7 @@ public interface GameLogRepository extends JpaRepository<GameLogEntity,Integer> 
     List<GameLogEntity> findByUserNo(int userNo);
 
     // [GL-03]	내 게임기록 상세조회	getMyGameLogDetail()	사용자(본인)의 게임기록을 상세 조회한다
-    GameLogEntity findByUserNoAndGameNo(int userNo, String gameNo);
+//    GameLogEntity findByUserNoAndGameNo(int userNo, String gameNo);
 
     // [AGL-01]	게임기록 삭제(관리자단)	deleteGameLog()	게임 기록 테이블을 삭제한다.
     // * 관리자가 부정한 게임 기록을 임의로 삭제한다.

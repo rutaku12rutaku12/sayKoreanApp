@@ -374,8 +374,8 @@ CREATE TABLE IF NOT EXISTS friend (
     select * from testItem;
     select * from ranking;
     select * from languages;
---    SELECT * FROM game;
---    SELECT * FROM gameLog;
+    SELECT * FROM game;
+    SELECT * FROM gameLog;
     SELECT * FROM chatList;
     SELECT * FROM chat;
     SELECT * FROM pointPolicy;
