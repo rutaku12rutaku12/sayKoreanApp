@@ -1,5 +1,7 @@
 package web.model.entity.game;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,13 +14,14 @@ import web.model.dto.game.GameDto;
 @Data @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Access(AccessType.FIELD) // 생략해도됨.
 public class GameEntity {
 
     // 1. 테이블 설계
     @Id // PK
     @GeneratedValue( strategy = GenerationType.IDENTITY ) // auto_increment
     private int gameNo;                     // 게임번호 (PK)
-    @Column( nullable = false , length = 50 )
+    @Column( nullable = false, length = 50 )
     private String gameTitle;               // 게임명
 
     // 2. 양방향 연결

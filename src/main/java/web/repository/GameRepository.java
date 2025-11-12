@@ -3,10 +3,7 @@ package web.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 import web.model.entity.game.GameEntity;
-import web.model.entity.game.GameLogEntity;
 
 @Repository
 public interface GameRepository extends JpaRepository<GameEntity, Integer> {
