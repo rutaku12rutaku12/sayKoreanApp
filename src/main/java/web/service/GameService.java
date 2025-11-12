@@ -44,7 +44,7 @@ public class GameService {
     public List<GameLogDto> getMyGameLog(int userNo) {
         // 1. 모든 엔티티 조회 및 스트림으로 엔티티 -> dto 변환
         List<GameLogDto> gameLogDtoList = gameLogRepository.findByUserNo(userNo)
-                .stream().map( GameLogEntity::toDto)
+                .stream().map(GameLogEntity::toDto)
                 .collect(Collectors.toList());
         // 2. dto 배열 반환
         return gameLogDtoList;
@@ -53,7 +53,7 @@ public class GameService {
     // [GL-03]	내 게임기록 상세조회	getMyGameLogDetail()	사용자(본인)의 게임기록을 상세 조회한다
     public GameLogDto getMyGameLogDetail(int userNo, int gameLogNo) {
         // 1. gameLogNo(pk)로 엔티티 조회
-        Optional<GameLogEntity> optional =gameLogRepository.findById(gameLogNo);
+        Optional<GameLogEntity> optional = gameLogRepository.findById(gameLogNo);
         // 2. 존재 여부 확인 후 있으면 반환할 쿼리메소드 가져오기
         if (optional.isPresent()) {
             GameLogEntity gameLogEntity = gameLogRepository.findByUserNoAndGameLogNo(userNo, gameLogNo);
@@ -65,36 +65,35 @@ public class GameService {
 
     // [AGL-01]	게임기록 삭제(관리자단)	deleteGameLog()	게임 기록 테이블을 삭제한다.
     // * 관리자가 부정한 게임 기록을 임의로 삭제한다.
-    // * 사용자가 탈퇴했을 경우, 게임 기록을 삭제한다.
-    public boolean deleteGameLog(Integer gameLogNo ,Integer userNo) {
-        try{
+
+    public boolean deleteGameLog(Integer gameLogNo, Integer userNo) {
+        try {
             // [1] 관리자 : 특정 게임 기록 번호로 삭제
             if (gameLogNo != null && userNo == null) {
                 // 1. gameLogNo(pk)로 엔티티 조회
                 if (!gameLogRepository.existsById(gameLogNo)) {
                     return false;
                 }
-                   gameLogRepository.deleteById(gameLogNo);
-                   return true;
-
-                // [2] 회원탈퇴 : 특정 회원의 모든 게임 기록삭제
-                } else if (userNo != null && gameLogNo == null) {
-                List<GameLogEntity> logs = gameLogRepository.findByUserNo(userNo);
-                if(logs.isEmpty()){
-                    return false;
-                }
-
-                gameLogRepository.deleteAllByUserNo(userNo);
+                gameLogRepository.deleteById(gameLogNo);
                 return true;
-            }
 
-            // [3] 잘못된 요청일 경우 (둘 다 값이 있거나 둘 다 null)
-            else {
+                // [2] 잘못된 요청일 경우 (둘 다 값이 있거나 둘 다 null)
+            }  else {
                 return false;
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             System.err.println("게임기록 삭제 실패:" + e.getMessage());
             throw new RuntimeException("게임기록 삭제 중 오류가 발생했습니다." + e);
+        }
+    }
+
+    // * 사용자가 탈퇴했을 경우, 게임 기록을 삭제한다.
+    public void deleteGameLogByUser(int userNo) {
+        try {
+            gameLogRepository.deleteAllByUserNo(userNo);
+            System.out.println("유저번호 " + userNo + "의 게임 기록이 모두 삭제되었습니다.");
+        } catch (Exception e) {
+            throw new RuntimeException("게임 기록 삭제 중 오류 발생: " + e.getMessage(), e);
         }
     }
 
@@ -144,7 +143,7 @@ public class GameService {
         List<GameEntity> gameEntityList = gameRepository.findAll();
         // 2. 모든 엔티티 dto 변환
         List<GameDto> gameDtoList = gameEntityList
-                .stream().map(GameEntity :: toDto)
+                .stream().map(GameEntity::toDto)
                 .collect(Collectors.toList());
         // 3. dto list로 반환
         return gameDtoList;

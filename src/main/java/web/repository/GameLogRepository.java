@@ -24,13 +24,9 @@ public interface GameLogRepository extends JpaRepository<GameLogEntity,Integer> 
 
     // [AGL-01]	게임기록 삭제(관리자단)	deleteGameLog()	게임 기록 테이블을 삭제한다.
     // * 관리자가 부정한 게임 기록을 임의로 삭제한다.
-    @Modifying
-    @Query("DELETE FROM GameLogEntity g WHERE g.gameLogNo = :gameLogNo")
-    void deleteByGameLogNo(@Param("gameLogNo") int gameLogNo);
+    void deleteByGameLogNo(int gameLogNo);
     // * 사용자가 탈퇴했을 경우, 게임 기록을 삭제한다.
-    @Modifying
-    @Query("DELETE FROM GameLogEntity g WHERE g.userNo = :userNo")
-    void deleteAllByUserNo(@Param("userNo") int userNo);
+    void deleteAllByUserNo(int userNo);
 
     // [AGL-02]	게임전체기록 조회 (관리자단)	getGameLog()	게임기록 전체를 조회한다.
 

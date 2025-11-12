@@ -19,6 +19,7 @@ public class UserService {
 
     private final UserMapper userMapper;
     private final RankingService rankingService;
+    private final GameService gameService; // 추가
 
     // 비크립트 라이브러리 객체 주입
     private final BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
@@ -197,6 +198,10 @@ public class UserService {
         try {
             // 1) 랭킹 데이터 삭제
             rankingService.deleteRankByUser(userNo);
+
+            // 2) 게임 기록 데이터 삭제
+            gameService.deleteGameLogByUser(userNo);
+
             // 2) 회원 상태 변경
             int result = userMapper.deleteUserStatus(deleteUserStatusDto);
 
