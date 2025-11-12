@@ -94,7 +94,8 @@ export default function SignUpPage(props) {
     // 회원가입 함수 
     const onSignup = async () => {
         try {
-            const obj = { name: name, email: email, password: password, nickName: nickName, phone: phone, recaptcha: captchaValue }
+            const obj = { name: name, email: email, password: password, 
+                            nickName: nickName, phone: phone, recaptcha: captchaValue }
             console.log(obj);
             if (emailCheck || phoneCheck) return alert(t("signuppage.dupCheck"))
             // CORS 옵션 허용
