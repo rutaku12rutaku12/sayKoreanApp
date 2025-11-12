@@ -25,6 +25,12 @@ public class TestController {
         return ResponseEntity.ok(testService.getListTest(langNo));
     }
 
+    // ex) GET /saykorean/test/by-study?studyNo=12
+    @GetMapping("/by-study")
+    public ResponseEntity<List<TestDto>> getTestsByStudy(@RequestParam int studyNo , @RequestParam int langNo ) {
+        return ResponseEntity.ok(testService.findByStudyNo(studyNo,langNo));
+    }
+
     // [2] 특정 시험 문항 + 보기 조회
     @GetMapping("/findtestitem")
     public ResponseEntity<List<Map<String , Object>>> findTestItem(
