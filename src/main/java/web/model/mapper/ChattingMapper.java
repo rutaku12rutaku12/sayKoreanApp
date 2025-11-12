@@ -15,7 +15,7 @@ public interface ChattingMapper {
     int checkChatRoom(@Param("offer") int offer, @Param("receiver") int receiver);
 
     // 개인 채팅방 생성 (친구 수락 시 자동)
-    @Insert("INSERT INTO chatList (chatListTitle, chatListState, userNo) VALUES (CONCAT(LEAST(#{offer}, #{receiver}), '_', GREATEST(#{offer}, #{receiver}))")
+    @Insert("INSERT INTO chatList (chatListTitle, chatListState, userNo) VALUES (CONCAT(LEAST(#{offer}, #{receiver}), '_', GREATEST(#{offer}, #{receiver})), 1, #{offer})")
     int createChatRoom(@Param("offer") int offer, @Param("receiver") int receiver);
 
 
