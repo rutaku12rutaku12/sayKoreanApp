@@ -1,5 +1,7 @@
 package web.model.dto.game;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +16,7 @@ public class GameLogDto {
     private int gameLogNo;          // 게임기록번호
     private int gameResult;         // 게임결과 2 : 매우성공 (무한모드 진입) , 1 : 성공 , 0 : 실패
     private int gameScore;          // 게임점수
-    private String gameFinishedAt;  // 게임완료시간
+    private LocalDateTime gameFinishedAt;  // 게임완료시간
     private int userNo;             // 사용자번호(PK)
     private int gameNo;             // 게임번호(PK)
 
@@ -28,8 +30,7 @@ public class GameLogDto {
         return GameLogEntity.builder()
                 .gameLogNo( this.gameLogNo )
                 .gameResult( this.gameResult )
-                .gameScore( this.gameScore )
-                .gameFinishedAt( this.gameFinishedAt )
+                .gameScore( this.gameScore )    // 시간은 엔티티에서 빌더 디폴트로 처리
                 .userNo( this.userNo )
                 .gameEntity( gameEntity )
                 .build();

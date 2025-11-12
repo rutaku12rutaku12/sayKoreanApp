@@ -1,6 +1,9 @@
 package web.repository;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -17,13 +20,20 @@ public interface GameLogRepository extends JpaRepository<GameLogEntity,Integer> 
     List<GameLogEntity> findByUserNo(int userNo);
 
     // [GL-03]	내 게임기록 상세조회	getMyGameLogDetail()	사용자(본인)의 게임기록을 상세 조회한다
-//    GameLogEntity findByUserNoAndGameNo(int userNo, String gameNo);
+    GameLogEntity findByUserNoAndGameLogNo(int userNo, int gameLogNo);
 
     // [AGL-01]	게임기록 삭제(관리자단)	deleteGameLog()	게임 기록 테이블을 삭제한다.
     // * 관리자가 부정한 게임 기록을 임의로 삭제한다.
+    @Modifying
+    @Query("DELETE FROM GameLogEntity g WHERE g.gameLogNo = :gameLogNo")
+    void deleteByGameLogNo(@Param("gameLogNo") int gameLogNo);
     // * 사용자가 탈퇴했을 경우, 게임 기록을 삭제한다.
+    @Modifying
+    @Query("DELETE FROM GameLogEntity g WHERE g.userNo = :userNo")
+    void deleteAllByUserNo(@Param("userNo") int userNo);
 
     // [AGL-02]	게임전체기록 조회 (관리자단)	getGameLog()	게임기록 전체를 조회한다.
 
     // [AGL-03]	게임상세기록 조회 (관리자단)	getGameLogDetail()	게임 기록을 상세 조회한다.
+
 }
