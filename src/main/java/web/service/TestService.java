@@ -52,6 +52,10 @@ public class TestService {
         return testMapper.getListTest(langNo);
     }
 
+    public List<TestDto> findByStudyNo(int studyNo, int langNo) {
+        return testMapper.findByStudyNo( studyNo, langNo );
+    }
+
     /*
      * [2] 문항 목록 (이미지/오디오 + 난수 옵션까지 포함)
      *

@@ -55,6 +55,32 @@ public interface TestMapper { // mapper start
     })
     List<TestDto> getListTest(int langNo);
 
+
+    @Select("""
+        SELECT
+            t.test_no      AS testNo,
+            t.study_no     AS studyNo,
+            CASE #{langNo}
+                WHEN 1 THEN t.test_title
+                WHEN 2 THEN t.test_title_jp
+                WHEN 3 THEN t.test_title_cn
+                WHEN 4 THEN t.test_title_en
+                WHEN 5 THEN t.test_title_es
+                ELSE        t.test_title
+            END            AS testTitleSelected,
+            t.test_title   AS testTitle,
+            t.test_desc    AS testDesc,
+            t.test_order   AS testOrder
+        FROM test t
+        WHERE t.study_no = #{studyNo}
+          AND (t.is_active = 1 OR t.is_active IS NULL)
+        ORDER BY t.test_order, t.test_no
+    """)
+    List<TestDto> findByStudyNo(
+            @Param("studyNo") int studyNo,
+            @Param("langNo")  int langNo
+    );
+
     /*
      * [2] 문항 + 예문(이미지/오디오 포함) 조회
      * ------------------------------------------------------
