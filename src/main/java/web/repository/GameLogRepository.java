@@ -29,7 +29,15 @@ public interface GameLogRepository extends JpaRepository<GameLogEntity,Integer> 
     void deleteAllByUserNo(int userNo);
 
     // [AGL-02]	게임전체기록 조회 (관리자단)	getGameLog()	게임기록 전체를 조회한다.
+    // [*] 게임번호 대신에 게임명 출력
+    @Query("select gl from GameLogEntity gl join fetch gl.gameEntity g order by gl.gameFinishedAt desc")
+    List<GameLogEntity> findAllWithGameTitle();
 
     // [AGL-03]	게임상세기록 조회 (관리자단)	getGameLogDetail()	게임 기록을 상세 조회한다.
+    // [*] 게임번호 대신에 게임명 출력
+    @Query("select gl from GameLogEntity gl join fetch gl.gameEntity g where gl.gameLogNo = :gameLogNo")
+    GameLogEntity findByIdWithGameTitle(@Param("gameLogNo") int gameLogNo);
+
+
 
 }

@@ -76,9 +76,7 @@ export const deleteGameLog = async (gameLogNo = null, userNo = null) => { // 스
 // [AGL-02] 게임 기록 전체 조회
 export const getGameLogList = async () => {
     try {
-        const res = await axios.get(`${BASE_URL}/gamelog/detail`, {
-            params: { gameLogNo }
-        });
+        const res = await axios.get(`${BASE_URL}/gamelog`);
         return res.data;
     } catch (e) {
         console.error("게임 기록 조회 실패:", e);

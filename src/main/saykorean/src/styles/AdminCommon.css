@@ -858,3 +858,73 @@ html {
 .admin-info-box ul li {
   list-style: none;
 }
+
+/* ===== 게임 관리 페이지 전용 ===== */
+
+.admin-header-title {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.admin-tab-container {
+  display: flex;
+  gap: 10px;
+  border-bottom: 2px solid #ddd;
+  margin-bottom: 20px;
+}
+
+.admin-tab-btn {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.admin-tab-btn.active {
+  font-weight: bold;
+  color: #667eea;
+  border-bottom: 3px solid #667eea;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.admin-table th {
+  background-color: #667eea;
+  color: white;
+  padding: 12px;
+  text-align: left;
+}
+
+.admin-table td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+.admin-filter-container {
+  margin-bottom: 20px;
+}
+
+.admin-filter-btn {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: all 0.2s ease;
+}
+
+.admin-filter-btn.active {
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
+  font-weight: bold;
+}

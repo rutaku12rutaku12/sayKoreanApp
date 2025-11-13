@@ -114,8 +114,9 @@ public class GameController {
     // * 사용자가 탈퇴했을 경우, 게임 기록을 삭제한다.
     // URL : http://localhost:8080/saykorean/admin/gamelog?gameLogNo=1&userNo=
     // URL : http://localhost:8080/saykorean/admin/gamelog?gameLogNo=&userNo=1
-    @DeleteMapping("/admin/gamelog/delete")
-    public ResponseEntity<?> deleteGameLog(@RequestParam Integer gameLogNo , @RequestParam Integer userNo) {
+    @DeleteMapping("/admin/gamelog")
+    public ResponseEntity<?> deleteGameLog(@RequestParam(required = false) Integer gameLogNo ,
+                                           @RequestParam(required = false) Integer userNo) {
         return  ResponseEntity.ok(gameService.deleteGameLog(gameLogNo, userNo));
     }
 

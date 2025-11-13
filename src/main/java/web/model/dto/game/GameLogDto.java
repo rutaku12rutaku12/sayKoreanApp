@@ -20,6 +20,10 @@ public class GameLogDto {
     private int userNo;             // 사용자번호(PK)
     private int gameNo;             // 게임번호(PK)
 
+    // 추가 필드 (조회용 - 관리자단에서 사용)
+    private String gameTitle;       // 게임명
+    private String email;           // 사용자 이메일
+
     // Dto -> Entity 변환 : C
     public GameLogEntity toEntity() {
         // ⭐ gameNo를 GameEntity로 변환

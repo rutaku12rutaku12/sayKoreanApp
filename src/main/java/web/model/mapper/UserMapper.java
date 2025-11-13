@@ -64,6 +64,11 @@ public interface UserMapper {
     @Update("update users set userState = 1 where userNo = #{userNo}")
     public int recoverUser(UserDto userDto);
 
+    // [AGL-02]	게임전체기록 조회 (관리자단)	getGameLog()	게임기록 전체를 조회한다.
+    // [*] 사용자번호 대신에 이메일 출력
+    @Select("select email from users where userNo = #{userNo}")
+    String findEmailByUserNo(@Param("userNo") int userNo);
+
 
 //    // getGenre
 //    @Select("SELECT genreNo FROM users WHERE userNo=#{userNo}")

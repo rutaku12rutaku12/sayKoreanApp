@@ -12,6 +12,7 @@ import web.model.dto.game.GameDto;
 import web.model.dto.game.GameLogDto;
 import web.model.entity.game.GameEntity;
 import web.model.entity.game.GameLogEntity;
+import web.model.mapper.UserMapper;
 import web.repository.GameLogRepository;
 import web.repository.GameRepository;
 
@@ -22,6 +23,7 @@ public class GameService {
     // [*] DI
     private final GameRepository gameRepository;
     private final GameLogRepository gameLogRepository;
+    private final UserMapper userMapper;
 
     // [GL-01]	게임기록생성	createGameLog()	사용자가 게임을 종료하면 해당 기록을 테이블에 저장한다.
     // * 게임 결과에 따라 해당 사용자의 포인트가 증가한다.
@@ -99,25 +101,58 @@ public class GameService {
 
     // [AGL-02]	게임전체기록 조회 (관리자단)	getGameLog()	게임기록 전체를 조회한다.
     public List<GameLogDto> getGameLog() {
-        // 1. 모든 엔티티 조회 및 스트림으로 엔티티 -> dto 변환
-        List<GameLogEntity> gameLogEntityList = gameLogRepository.findAll();
+        // 1. 모든 엔티티 조회 및 스트림으로 엔티티 -> dto 변환 (+게임명도 함께 조회)
+        List<GameLogEntity> gameLogEntityList = gameLogRepository.findAllWithGameTitle();
         // 2. 모든 엔티티 dto 변환
         List<GameLogDto> gameLogDtoList = gameLogEntityList
-                .stream().map(GameLogEntity::toDto)
-                .collect(Collectors.toList());
+                .stream().map(entity -> {
+                    GameLogDto dto = entity.toDto();
+
+                    // 게임명 추가 (JPA Entity에서 가져옴)
+                    if (entity.getGameEntity() != null) {
+                        dto.setGameTitle(entity.getGameEntity().getGameTitle());
+                    }
+
+                    // 이메일 추가 (MyBatis Mapper로 조회)
+                    try {
+                        String email = userMapper.findEmailByUserNo(entity.getUserNo());
+                        dto.setEmail(email != null ? email : "알 수 없음");
+                    } catch (Exception e) {
+                        dto.setEmail("알 수 없음");
+                    }
+                    // dto 반환
+                    return dto;
+                }).collect(Collectors.toList());
+
         // 3. dto list 배열 반환
         return gameLogDtoList;
     }
 
     // [AGL-03]	게임상세기록 조회 (관리자단)	getGameLogDetail()	게임 기록을 상세 조회한다.
     public GameLogDto getGameLogDetail(int gameLogNo) {
-        // 1. gameLogNo(pk) 엔티티 조회
-        Optional<GameLogEntity> optional = gameLogRepository.findById(gameLogNo);
-        // 2. 옵셔널로 존재 확인 후 쿼리 메소드 가져오기
-        if (optional.isPresent()) {
-            GameLogEntity gameLogEntity = optional.get();
-            return gameLogEntity.toDto();
+        // 1. 엔티티 조회 및 dto 변환
+        GameLogEntity gameLogEntity = gameLogRepository.findByIdWithGameTitle(gameLogNo);
+
+        if (gameLogEntity != null) {
+            GameLogDto dto = gameLogEntity.toDto();
+
+            // 게임명 추가 (JPA Entity에서 가져옴)
+            if (gameLogEntity.getGameEntity() != null) {
+                dto.setGameTitle(gameLogEntity.getGameEntity().getGameTitle());
+            }
+
+            // 이메일 추가 (MyBatis Mapper로 조회)
+            try {
+                String email = userMapper.findEmailByUserNo(gameLogEntity.getUserNo());
+                dto.setEmail(email != null ? email : "알 수 없음");
+            } catch (Exception e) {
+                dto.setEmail("알 수 없음");
+            }
+
+            // dto 반환
+            return dto;
         }
+
         // 3. 없음 null이지
         return null;
     }
