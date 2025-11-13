@@ -45,6 +45,8 @@ import Ranking from "./pages/Ranking.jsx";
 
 // CSS
 import "./styles/App.css";
+import AdminGameCreate from "./adminPages/AdminGameCreate.jsx";
+import AdminGameList from "./adminPages/AdminGameList.jsx";
 
 
 // 언어 변환 매핑
@@ -90,8 +92,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* 시작 페이지 */}
-          <Route path="/" element={<StartPage/>}>
-            
+          <Route path="/" element={<StartPage />}>
+
           </Route>
           {/* 관리자단 */}
           <Route path="/admin" element={<AdminLayout />}>
@@ -105,7 +107,8 @@ function App() {
             <Route path="user" element={<AdminUserList />} />
             <Route path="user/:userNo" element={<AdminUserIndi />} />
             <Route path="character-training" element={<CharacterTraining />} />
-
+            <Route path="game" element={<AdminGameList />} />
+            <Route path="game/create" element={<AdminGameCreate />} />
           </Route>
 
           {/* 사용자단 */}
@@ -128,7 +131,7 @@ function App() {
             <Route path="/testresult/:testNo" element={<TestResult />} />
             <Route path="/rank" element={<Ranking />} />
             <Route path="/loading" element={<LoadingPage />} />
-            <Route path="/examplelist" element={<ExampleList/>}></Route>
+            <Route path="/examplelist" element={<ExampleList />}></Route>
           </Route>
 
           {/* 404 */}

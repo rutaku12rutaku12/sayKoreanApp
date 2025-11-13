@@ -133,7 +133,7 @@ public class GameController {
         return ResponseEntity.ok(gameService.getGameLogDetail(gameLogNo));
     }
 
-    // [AGL-04]	게임 종류 추가(관리자단)	createGame()	게임 테이블을 추가한다.
+    // [AG-01]	게임 종류 추가(관리자단)	createGame()	게임 테이블을 추가한다.
     // * 실제 게임은 플러터 assets 폴더에 추가해야합니다.
     // URL : http://localhost:8080/saykorean/admin/game
     // BODY : { "gameTitle" : "날쌘돌이토돌이" }
@@ -142,21 +142,21 @@ public class GameController {
         return ResponseEntity.ok(gameService.createGame(gameDto));
     }
 
-    // [AGL-05]	게임 전체조회(관리자단)	getGame()	게임 테이블을 전체조회한다.
+    // [AG-02]	게임 전체조회(관리자단)	getGame()	게임 테이블을 전체조회한다.
     // URL : http://localhost:8080/saykorean/admin/game
     @GetMapping("/admin/game")
     public ResponseEntity<?> getGame() {
         return ResponseEntity.ok(gameService.getGame());
     }
 
-    // [AGL-06]	게임 상세조회(관리자단)	getDetailGame()	게임 테이블을 상세조회한다.
+    // [AG-03]	게임 상세조회(관리자단)	getDetailGame()	게임 테이블을 상세조회한다.
     // URL : http://localhost:8080/saykorean/admin/game/detail?gameNo=1
     @GetMapping("/admin/game/detail")
     public ResponseEntity<?> getGameDetail(@RequestParam int gameNo) {
         return ResponseEntity.ok(gameService.getGameDetail(gameNo));
     }
 
-    // [AGL-07]	게임 삭제(관리자단)	deleteGame()	게임 테이블을 삭제한다.
+    // [AG-04]	게임 삭제(관리자단)	deleteGame()	게임 테이블을 삭제한다.
     // URL : http://localhost:8080/saykorean/admin/game?gameNo=1
     @DeleteMapping("/admin/game")
     public ResponseEntity<?> deleteGame(@RequestParam int gameNo) {

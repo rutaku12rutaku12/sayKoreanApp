@@ -762,3 +762,99 @@ html {
     padding: 15px 20px;
   }
 } */
+
+/* 게임 파트 추가 예정 */
+
+.admin-game-register-container {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.admin-game-register-title {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* --- Form --- */
+.admin-form-group {
+  margin-bottom: 15px;
+}
+
+.admin-form-label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.admin-form-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+/* --- Button --- */
+.admin-submit-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #667eea;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.admin-submit-button:hover {
+  background-color: #5a6fd1;
+}
+
+.admin-submit-button.disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* --- Message --- */
+.admin-message-box {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid;
+}
+
+.admin-message-box.success {
+  background-color: #d4edda;
+  color: #155724;
+  border-color: #c3e6cb;
+}
+
+.admin-message-box.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border-color: #f5c6cb;
+}
+
+/* --- Info Box --- */
+.admin-info-box {
+  margin-top: 30px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+.admin-info-box h4 {
+  margin-bottom: 10px;
+}
+
+.admin-info-box ul {
+  line-height: 1.8;
+  color: #666;
+}
+
+.admin-info-box ul li {
+  list-style: none;
+}
