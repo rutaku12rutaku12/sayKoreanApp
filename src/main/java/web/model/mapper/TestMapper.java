@@ -58,7 +58,7 @@ public interface TestMapper { // mapper start
           AND p.isCompleted = 1                          -- 실제 완료 플래그 컬럼명으로 수정
         ORDER BY t.testNo DESC
     """)
-    @ResultMap("TestMap")
+    // @ResultMap("TestMap")
     List<TestDto> getTestsOfCompletedStudies(
             @Param("userNo") int userNo,
             @Param("langNo") int langNo
