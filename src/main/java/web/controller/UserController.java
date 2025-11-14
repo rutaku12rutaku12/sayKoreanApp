@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import web.config.RecaptchaConfig;
 import web.model.dto.user.*;
 import web.service.UserService;
+import web.util.AuthUtil;
 
 import java.util.Map;
 
@@ -26,6 +27,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final AuthUtil authUtil;
 
     @Value("${recaptcha.secretKey}")
     private String secretKey;
@@ -61,7 +63,6 @@ public class UserController {
     public ResponseEntity<?> logIn(@Valid @RequestBody LoginDto loginDto, HttpServletRequest request ){
 
         String clientType = request.getHeader("X-Client-Type");
-
         try{
             Object result = userService.logIn(loginDto , clientType , request );
 
@@ -106,15 +107,14 @@ public class UserController {
     // [US-04] 내 정보 조회( 로그인 중인 사용자정보 조회 ) info()
     @GetMapping("/info")
     public ResponseEntity<UserDto> info( HttpServletRequest request ){
+        Integer userNo = authUtil.getUserNo(request);
         // 로그인 된 세션 정보 가져오기
-        HttpSession session = request.getSession();
         // 세션이 없거나 세션내 userNo 값이 없으면 null 반환
-        if( session == null || session.getAttribute("userNo")==null){
-            return ResponseEntity.status(400).body(null);}
-        // 모든 자료를 저장하기 위해 Object 타입으로 세션 저장
-        Object obj = session.getAttribute("userNo");
-        if( obj == null ) return ResponseEntity.status(400).body(null);
-        int userNo = (int)obj;
+        if( userNo == null ){
+            System.out.println("인증 실패: userNo를 가져올 수 없음");
+            return ResponseEntity.status(401).body(null);
+        }
+
         // 서비스에게 전달하고 응답 받기
         UserDto result = userService.info(userNo);
             System.out.println("로그인 한 사용자의 정보조회 : "+result);

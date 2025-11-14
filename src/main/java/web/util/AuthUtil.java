@@ -18,7 +18,7 @@ public class AuthUtil {
 
         if ("flutter".equalsIgnoreCase(clientType)) {
             // JWT 방식
-            String authHeader = request.getHeader("Authorizzation");
+            String authHeader = request.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
                 if (jwtUtil.isTokenValid(token)) {
