@@ -39,52 +39,29 @@ public interface TestMapper { // mapper start
      * @param langNo 언어 번호 (1=한국어, 2=일본어, 3=중국어, 4=영어, 5=스페인어)
      * @return 언어별 시험 제목이 포함된 TestDto 리스트
      */
+// 새로 추가: 내가 학습완료한 주제들의 테스트 목록
     @Select("""
         SELECT
-            testNo,
-            studyNo,
+            t.testNo,
+            t.studyNo,
             CASE #{langNo}
-                WHEN 1 THEN testTitle
-                WHEN 2 THEN testTitleJp
-                WHEN 3 THEN testTitleCn
-                WHEN 4 THEN testTitleEn
-                WHEN 5 THEN testTitleEs
-                ELSE testTitle
+                WHEN 1 THEN t.testTitle
+                WHEN 2 THEN t.testTitleJp
+                WHEN 3 THEN t.testTitleCn
+                WHEN 4 THEN t.testTitleEn
+                WHEN 5 THEN t.testTitleEs
+                ELSE t.testTitle
             END AS testTitleSelected
-        FROM test
-        ORDER BY testNo DESC
-    """)
-    @Results(id = "TestMap", value = {
-            @Result(column = "testNo", property = "testNo", id = true),
-            @Result(column = "studyNo", property = "studyNo"),
-            @Result(column = "testTitleSelected", property = "testTitleSelected")
-    })
-    List<TestDto> getListTest(int langNo);
-
-
-    @Select("""
-        SELECT
-            t.test_no      AS testNo,
-            t.study_no     AS studyNo,
-            CASE #{langNo}
-                WHEN 1 THEN t.test_title
-                WHEN 2 THEN t.test_title_jp
-                WHEN 3 THEN t.test_title_cn
-                WHEN 4 THEN t.test_title_en
-                WHEN 5 THEN t.test_title_es
-                ELSE        t.test_title
-            END            AS testTitleSelected,
-            t.test_title   AS testTitle,
-            t.test_desc    AS testDesc,
-            t.test_order   AS testOrder
         FROM test t
-        WHERE t.study_no = #{studyNo}
-          AND (t.is_active = 1 OR t.is_active IS NULL)
-        ORDER BY t.test_order, t.test_no
+        JOIN study_progress p ON p.studyNo = t.studyNo   -- 실제 완료/진행 테이블명으로 수정
+        WHERE p.userNo = #{userNo}
+          AND p.isCompleted = 1                          -- 실제 완료 플래그 컬럼명으로 수정
+        ORDER BY t.testNo DESC
     """)
-    List<TestDto> findByStudyNo(
-            @Param("studyNo") int studyNo,
-            @Param("langNo")  int langNo
+    @ResultMap("TestMap")
+    List<TestDto> getTestsOfCompletedStudies(
+            @Param("userNo") int userNo,
+            @Param("langNo") int langNo
     );
 
     /*
