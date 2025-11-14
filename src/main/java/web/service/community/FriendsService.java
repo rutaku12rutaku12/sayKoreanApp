@@ -62,7 +62,7 @@ public class FriendsService {
 
     //요청 받은 목록 조회
     public List<FriendsDto> requestsList(int userNo){
-        return friendsMapper.FriendsList(userNo);
+        return friendsMapper.findPendingList(userNo);
     }
     //내 친구 목록 조회
     public List<Map<String, Object>> friendList(int userNo){
