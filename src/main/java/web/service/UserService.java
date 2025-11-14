@@ -1,5 +1,7 @@
 package web.service;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.dao.DuplicateKeyException;
@@ -9,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import web.model.dto.user.*;
 import web.model.mapper.UserMapper;
+import web.util.JwtUtil;
 
 import java.util.Random;
 
@@ -19,6 +22,7 @@ public class UserService {
 
     private final UserMapper userMapper;
     private final RankingService rankingService;
+    private final JwtUtil jwtUtil;
     private final GameService gameService; // 추가
 
     // 비크립트 라이브러리 객체 주입
@@ -80,17 +84,50 @@ public class UserService {
     }
 
     // [US-02] 로그인 logIn()
-    public LoginDto logIn(LoginDto loginDto) {
-        LoginDto result = userMapper.logIn(loginDto);
-        // 평문과 암호문 비교
-        boolean result2 = bcrypt.matches(loginDto.getPassword(), result.getPassword());
-        if (result2) {
-            result.setPassword(null);
-            return result;
-        } else {
+    public Object logIn(LoginDto loginDto , String clientType, HttpServletRequest request) {
+        // 1) 로그인 검증
+        LoginDto user = userMapper.logIn(loginDto);
+
+        if(user == null){
             return null;
         }
+        // 평문과 암호문 비교/검증
+        boolean result = bcrypt.matches(loginDto.getPassword(), user.getPassword());
+        if (!result) {
+            return null;
+        }
+        user.setPassword(null); // 비밀번호 비공개
+
+        // 2 로그인 방식 나누기
+        if("flutter".equalsIgnoreCase(clientType)){
+            // JWT 방식
+            String token = jwtUtil.createToken(user.getEmail(), user.getUserNo());
+            return token;
+        }else {
+            // 세션 방식
+            HttpSession session = request.getSession(true);
+            session.setAttribute("userNo",user.getUserNo());
+            return user;
+        }
+
     } // func end
+
+    // [US-03] 로그 아웃
+    public boolean logOut(String clientType, HttpServletRequest request ){
+        if("flutter".equalsIgnoreCase(clientType)){
+            System.out.println("flutter 로그아웃 처리 (클라이언트에서 토큰 삭제 필요)");
+            return true;
+        } else {
+            // 세션 방식
+            HttpSession session = request.getSession(false); // 새 세션 생성 안함
+
+            if ( session == null || session.getAttribute("userNo") == null ){
+                return false; // 이미 로그아웃 상태
+            }
+            session.removeAttribute("userNo");
+            return true;
+        }
+    }
 
     // [US-04] 내 정보 조회( 로그인 중인 사용자정보 조회 ) info()
     public UserDto info(int userNo) {
