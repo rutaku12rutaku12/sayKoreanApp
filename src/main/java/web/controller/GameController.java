@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import web.model.dto.game.GameDto;
 import web.model.dto.game.GameLogDto;
 import web.service.GameService;
+import web.util.AuthUtil;
 
 // [*] 예외 핸들러 : 전역으로도 사용 가능
 @Log4j2
@@ -44,6 +45,7 @@ class GameExceptionHandler { //
 public class GameController {
     // [*] DI
     private final GameService gameService;
+    private final AuthUtil authUtil;
     
     // 테스트 모드 플래그 ( JWT 이식 전에 테스트용. 실제 배포 시에는 false로 변경!)
     private static final boolean TEST_MODE = true;
@@ -55,13 +57,14 @@ public class GameController {
     // * 게임 점수에 따라 랭킹 테이블에 반영될 수 있다.
     // * 게임 테이블 FK로 받는다
     // URL : http://localhost:8080/saykorean/gamelog
-    // 로그인 상태에서만 가능!
+    // HEADERS :
+    //     *   - X-Client-Type: flutter (Flutter 앱인 경우)
+    //     *   - Authorization: Bearer {JWT_TOKEN} (Flutter & JWT 모드)
     // BODY : { "gameNo" : "1"  ,  "gameResult" : "1" ,  "gameScore" : "300" }
     @PostMapping("/gamelog")
     public ResponseEntity<?> createGameLog(
             @RequestBody GameLogDto gameLogDto,
-            HttpServletRequest request,
-            @RequestHeader(value = "Authorization" , required = false) String authHeader) {
+            HttpServletRequest request) {
 
         Integer userNo = null;
 
@@ -71,34 +74,21 @@ public class GameController {
             log.info("🧪 TEST MODE: 게임 기록 생성 - userNo: {}", userNo);
         }
 
-        // [실제 운영 모드] JWT 토큰 또는 세션으로 인증
-//        else {
-//            // JWT 토큰 우선 확인
-//            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-//                String token = authHeader.substring(7);
-//                userNo = jwtUtil.getUserNoFromToken(token);
-//
-//                if (userNo == null || !jwtUtil.validateToken(token) ) {
-//                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-//                    .body("유효하지 않은 토큰입니다.");
-//                }
-//            }
-//            // JWT 토큰 없으면 세션 확인 (웹 브라우저용)
-//            else {
-//                HttpSession session = request.getSession(false); // false → 기존 세션 없으면 null 리턴
-//                // 세션 정보 가져오기
-//                if (session == null || session.getAttribute("userNo") != null ){
-//                    userNo = (int) session.getAttribute("userNo");
-//                }
-//            }
-//
-//            // 인증 실패
-//            if(userNo == null) {
-//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-//                        .body("로그인이 필요합니다.");
-//            }
-//
-//        }
+        // [실제 운영 모드] AuthUtil 통한 통합 인증
+        else {
+            userNo = authUtil.getUserNo(request);
+            
+            if (userNo == null) {
+                String clientType = request.getHeader("X-Client-Type");
+                if("flutter".equalsIgnoreCase(clientType)) {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                            .body("로그인이 필요합니다. 유효한 JWT 토큰을 제공해주세요.");
+                } else {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                            .body("로그인이 필요합니다.");
+                }
+            }
+        }
 
         // 사용자 번호 설정
         gameLogDto.setUserNo(userNo);
@@ -115,75 +105,78 @@ public class GameController {
                     .body("게임 기록 저장에 실패했습니다.");
         }
     }
-    // 오류내용 Caused by: org.hibernate.exception.SQLGrammarException: could not execute statement [Unknown column 'game_no' in 'field list'] [insert into gamelog (game_no,game_finished_at,game_result,game_score,user_no) values (?,?,?,?,?)]
 
     // [GL-02]	내 게임기록 전체조회	getMyGameLog()	사용자(본인)의 게임기록 전체를 조회한다
     // URL : http://localhost:8080/saykorean/gamelog
     // 로그인 상태에서만 가능!
+    // HEADERS :
+    //     *   - X-Client-Type: flutter (Flutter 앱인 경우)
+    //     *   - Authorization: Bearer {JWT_TOKEN} (Flutter & JWT 모드)
     @GetMapping("/gamelog")
     public ResponseEntity<?> getMyGameLog(
-            HttpServletRequest request ,
-            @RequestHeader(value = "Authorization" , required = false) String authHeader) {
+            HttpServletRequest request) {
 
         Integer userNo = null;
 
         // [테스트 모드]
         if (TEST_MODE) {
             userNo = TEST_USER_NO;
+            log.info("🧪 TEST MODE: 게임 기록 조회 - userNo: {}", userNo);
         }
 
         // [실제 운영 모드]
-//        else {
-//            // JWT 토큰 확인
-//            if(authHeader != null && authHeader.startsWith("Bearer ")) {
-//                String token = authHeader.substring(7);
-//                userNo = jwtUtil.getUserNoFromToken(token);
-//
-//                if (userNo == null || !jwtUtil.validateToken(token)) {
-//                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-//                            .body("유효하지 않은 토큰입니다.");
-//                }
-//            }
-//            // 세션 확인
-//            else {
-//                HttpSession session = request.getSession(false); // false → 기존 세션 없으면 null 리턴
-//                // 세션 정보 가져오기
-//                if (session == null || session.getAttribute("userNo") == null ){
-//                    userNo = (int) session.getAttribute("userNo");
-//                }
-//            }
-//
-//            if (userNo == null) {
-//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-//                        .body("로그인이 필요합니다.");
-//            }
-//        }
+        else {
+            userNo = authUtil.getUserNo(request);
+
+            if (userNo == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("로그인이 필요합니다.");
+            }
+        }
+
         // 반환
         return ResponseEntity.ok(gameService.getMyGameLog(userNo));
     }
 
     // [GL-03]	내 게임기록 상세조회	getMyGameLogDetail()	사용자(본인)의 게임기록을 상세 조회한다
     // URL : http://localhost:8080/saykorean/gamelog/detail?gameLogNo=1
+    // HEADERS :
+    //     *   - X-Client-Type: flutter (Flutter 앱인 경우)
+    //     *   - Authorization: Bearer {JWT_TOKEN} (Flutter & JWT 모드)
     // 로그인 상태에서만 가능!
     @GetMapping("/gamelog/detail")
     public ResponseEntity<?> getMyGameLogDetail(
-            HttpServletRequest request,
-            @RequestParam int gameLogNo) {
-        GameLogDto gameLogDto = new GameLogDto();
-        HttpSession session = request.getSession(false); // false → 기존 세션 없으면 null 리턴
-        // 세션 정보 가져오기
-        if (session == null || session.getAttribute("userNo") == null ){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+            @RequestParam Integer gameLogNo,
+            HttpServletRequest request) {
+
+        Integer userNo = null;
+
+        // [테스트 모드]
+        if (TEST_MODE) {
+            userNo = TEST_USER_NO;
+            log.info("🧪 TEST MODE: 게임 기록 상세 조회 - userNo: {}, gameLogNo: {}", userNo, gameLogNo);
         }
 
-        // 세션에서 userNo 꺼내 DTO 주입
-        int userNo = (int) session.getAttribute("userNo");
-        gameLogDto.setUserNo(userNo);
+        // [실제 운영 모드]
+        else {
+            userNo = authUtil.getUserNo(request);
 
-        // 리턴
+            if (userNo == null) {
+               return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                       .body("로그인이 필요합니다.");
+            }
+        }
+
         return ResponseEntity.ok(gameService.getMyGameLogDetail(userNo, gameLogNo));
     }
 
+    // [GA-01] 게임 전체 목록 조회 (인증 불필요)
+    // URL : http://localhost:8080/saykorean/game
+    @GetMapping("/game")
+    public ResponseEntity<?> getGameList() {
+        log.info("📋 게임 목록 조회 요청");
+        return ResponseEntity.ok(gameService.getGame());
+    }
 
     // [AGL-01]	게임기록 삭제(관리자단)	deleteGameLog()	게임 기록 테이블을 삭제한다.
     // * 관리자가 부정한 게임 기록을 임의로 삭제한다.
@@ -193,6 +186,7 @@ public class GameController {
     @DeleteMapping("/admin/gamelog")
     public ResponseEntity<?> deleteGameLog(@RequestParam(required = false) Integer gameLogNo ,
                                            @RequestParam(required = false) Integer userNo) {
+        log.info("🗑️ 관리자: 게임 기록 삭제 - gameLogNo: {}, userNo: {}", gameLogNo, userNo);
         return  ResponseEntity.ok(gameService.deleteGameLog(gameLogNo, userNo));
     }
 
@@ -200,6 +194,7 @@ public class GameController {
     // URL : http://localhost:8080/saykorean/admin/gamelog
     @GetMapping("/admin/gamelog")
     public ResponseEntity<?> getGameLog() {
+        log.info("📋 관리자: 게임 전체 기록 조회");
         return ResponseEntity.ok(gameService.getGameLog());
     }
 
@@ -207,6 +202,7 @@ public class GameController {
     // URL : http://localhost:8080/saykorean/admin/gamelog/detail?gameLogNo=1
     @GetMapping("/admin/gamelog/detail")
     public ResponseEntity<?> getGameLogDetail(@RequestParam Integer gameLogNo) {
+        log.info("🔍 관리자: 게임 기록 상세 조회 - gameLogNo: {}", gameLogNo);
         return ResponseEntity.ok(gameService.getGameLogDetail(gameLogNo));
     }
 
@@ -216,6 +212,7 @@ public class GameController {
     // BODY : { "gameTitle" : "날쌘돌이토돌이" }
     @PostMapping("/admin/game")
     public ResponseEntity<?> createGame(@RequestBody GameDto gameDto) {
+        log.info("➕ 관리자: 게임 추가 - gameTitle: {}", gameDto.getGameTitle());
         return ResponseEntity.ok(gameService.createGame(gameDto));
     }
 
@@ -223,6 +220,7 @@ public class GameController {
     // URL : http://localhost:8080/saykorean/admin/game
     @GetMapping("/admin/game")
     public ResponseEntity<?> getGame() {
+        log.info("📋 관리자: 게임 목록 조회");
         return ResponseEntity.ok(gameService.getGame());
     }
 
@@ -230,6 +228,7 @@ public class GameController {
     // URL : http://localhost:8080/saykorean/admin/game/detail?gameNo=1
     @GetMapping("/admin/game/detail")
     public ResponseEntity<?> getGameDetail(@RequestParam int gameNo) {
+        log.info("🔍 관리자: 게임 상세 조회 - gameNo: {}", gameNo);
         return ResponseEntity.ok(gameService.getGameDetail(gameNo));
     }
 
@@ -237,6 +236,7 @@ public class GameController {
     // URL : http://localhost:8080/saykorean/admin/game?gameNo=1
     @DeleteMapping("/admin/game")
     public ResponseEntity<?> deleteGame(@RequestParam int gameNo) {
+        log.info("🗑️ 관리자: 게임 삭제 - gameNo: {}", gameNo);
         return ResponseEntity.ok(gameService.deleteGame(gameNo));
     }
 
