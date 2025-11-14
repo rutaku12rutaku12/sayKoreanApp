@@ -20,21 +20,19 @@ public class TestController {
     private final TestService testService;
 
     // [1] 시험 목록 조회
-
-    @GetMapping("/by-completed")
-    public ResponseEntity<List<TestDto>> getTestsOfCompletedStudies(
-            HttpSession session,
-            @RequestParam int langNo
-    ) {
-        Integer userNo = (Integer) session.getAttribute("userNo");
-        if (userNo == null) {
-            return ResponseEntity.status(401).build();
-        }
-
-        List<TestDto> list = testService.getTestsOfCompletedStudies(userNo, langNo);
-        return ResponseEntity.ok(list);
+    @GetMapping("")
+    public ResponseEntity<List<TestDto>> getListTest(@RequestParam int langNo) {
+        return ResponseEntity.ok(testService.getListTest(langNo));
     }
 
+    // ex) GET /saykorean/test/by-study?studyNo=12
+    @GetMapping("/by-study")
+    public ResponseEntity<List<TestDto>> getTestsByStudy(
+            @RequestParam int studyNo,
+            @RequestParam int langNo
+    ) {
+        return ResponseEntity.ok(testService.findByStudyNo(studyNo, langNo));
+    }
 
     // [2] 특정 시험 문항 + 보기 조회
     @GetMapping("/findtestitem")
