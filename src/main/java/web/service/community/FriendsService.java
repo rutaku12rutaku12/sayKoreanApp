@@ -44,6 +44,12 @@ public class FriendsService {
         return false;
     }
 
+    // 친구 거절
+    public boolean refusalFriend(int offer, int receiver) {
+        int deleteRow = friendsMapper.deleteFriend(offer, receiver);
+    return deleteRow > 0;
+    }
+
     //친구 삭제
     public boolean deleteFriend(int offer, int receiver){
         return friendsMapper.updateStatus(offer,receiver, -1) > 0;
@@ -54,6 +60,10 @@ public class FriendsService {
         return friendsMapper.updateStatus(offer, receiver, -2) > 0;
     }
 
+    //요청 받은 목록 조회
+    public List<FriendsDto> requestsList(int userNo){
+        return friendsMapper.FriendsList(userNo);
+    }
     //내 친구 목록 조회
     public List<Map<String, Object>> friendList(int userNo){
         List<FriendsDto> friends = friendsMapper.FriendsList(userNo);
