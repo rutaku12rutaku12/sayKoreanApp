@@ -16,6 +16,8 @@ import web.config.RecaptchaConfig;
 import web.model.dto.user.*;
 import web.service.UserService;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/saykorean")
 @RequiredArgsConstructor
@@ -57,30 +59,48 @@ public class UserController {
     // [US-02] 로그인 logIn()
     @PostMapping("/login")
     public ResponseEntity<?> logIn(@Valid @RequestBody LoginDto loginDto, HttpServletRequest request ){
-        // 세션 정보 가져오기
-        HttpSession session = request.getSession();
-        // 로그인 성공한 회원번호 확인
-        LoginDto result = userService.logIn(loginDto);
-        if( result!=null){
-            session.setAttribute("userNo",result.getUserNo());
-            System.out.println("로그인 성공, 로그인한 회원 정보 : "+result);
-            return ResponseEntity.status(200).body(result);
-        }else {return ResponseEntity.status(400).body(result);}
-    } // func end
+
+        String clientType = request.getHeader("X-Client-Type");
+
+        try{
+            Object result = userService.logIn(loginDto , clientType , request );
+
+            if( result == null ){
+                return ResponseEntity.status(401).body("로그인 실패");
+            }
+            // 플러터일 경우
+            if ("flutter".equalsIgnoreCase(clientType)){
+                // JWT 토큰 반환
+                System.out.println("토큰 로그인 성공, 로그인한 회원 토큰 정보 : "+result);
+                return ResponseEntity.ok(Map.of("token", result));
+            } else { // 리액트일 경우
+                // Web 세션 로그인 - 사용자 정보 반환
+                System.out.println("세션 로그인 성공, 로그인한 회원 정보 : "+result);
+                return ResponseEntity.ok(result);
+            }
+        } catch (Exception e){
+            return ResponseEntity.status(500).body("로그인 처리 중 오류 발생 : "+e);
+        }
+    }
 
     // [US-03] 로그아웃 logOut()
     @GetMapping("/logout")
-    public ResponseEntity<Integer> logOut(HttpServletRequest request){
-        HttpSession session = request.getSession();
-        System.out.println("세션 있음? " + (session != null));
-        // 이미 세션이 없거나 유저번호가 없으면 로그아웃 실패
-        if( session == null || session.getAttribute("userNo")==null ){
-            return ResponseEntity.status(400).body(0);
+    public ResponseEntity<?> logOut(HttpServletRequest request){
+        String clientType = request.getHeader("X-Client-Type");
+
+        try {
+            boolean result = userService.logOut(clientType,request);
+
+            if( result ) {
+                System.out.println("로그아웃 성공");
+                return ResponseEntity.ok(Map.of("message", "로그아웃 성공"));
+            } else {
+                System.out.println("로그아웃 실패");
+                return ResponseEntity.status(400).body(Map.of("message", "로그아웃 실패"));
+            }
+        }catch (Exception e){
+            return ResponseEntity.status(500).body(Map.of("message", "로그아웃 처리 중 오류 발생"));
         }
-        // 세션이 제거되면 로그아웃 성공
-        session.removeAttribute("userNo");
-        System.out.println("로그아웃 성공");
-        return ResponseEntity.status(200).body(1);
     }
 
     // [US-04] 내 정보 조회( 로그인 중인 사용자정보 조회 ) info()
