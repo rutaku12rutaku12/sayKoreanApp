@@ -68,20 +68,46 @@ public class RankingController {
     // 랭킹 테이블 레코드를 조회한다.
     // 사용자닉네임(userNo FK)과 시험명(examNo FK), 시험문항명(examNo FK)도 함께 조회.
     // 랭킹 로직 : type 분기 처리해서 넘기기
-    // 1) 정답왕 : 정답률이 높은 순
-    // (isCorrect의 인트값 합산이 가장 높은 사람)
-    // 2) 도전왕 : 가장 많이 문제를 푼 순서
-    // (isCorrect의 레코드 합산이 가장 높은 사람)
-    // 3) 끈기왕 : 같은 문제에 여러번 도전한 순
-    // (testRound의 평균값이 가장 높은 사람)
+    // type 파라미터:
+    // - accuracy    : 정답왕
+    // - challenge   : 도전왕
+    // - persistence : 끈기왕
+    // - game        : 게임왕
+    // - attendance  : 출석왕
+    // - point       : 포인트왕
     // 매개변수 int
     // 반환 List<RankingDto>
-    // URL : http://localhost:8080/saykorean/rank?type
+    // URL : http://localhost:8080/saykorean/rank?type=accuracy
     @GetMapping("")
     public ResponseEntity<List<Map<String, Object>>> getRank(@RequestParam String type) {
         List<Map<String, Object>> result = rankingService.getRank(type);
         return ResponseEntity.ok(result);
     }
+
+    // [RK-03-MY] 랭킹 분야별조회 - 내 순위
+    // URL : GET http://localhost:8080/saykorean/rank/my?type=accuracy&userNo=1
+    //
+    // JWT 토큰 사용 시:
+    // URL : GET http://localhost:8080/saykorean/rank/my?type=accuracy
+    // Header: Authorization: Bearer {JWT_TOKEN}
+    //
+    // type 파라미터: accuracy, challenge, persistence, game, attendance, point
+    @GetMapping("/my")
+    public ResponseEntity<Map<String, Object>> getMyRank(
+            @RequestParam String type,
+            @RequestParam int userNo) {
+
+        // JWT 토큰에서 userNo 가져오기 (Spring Security 사용 시 )
+        // Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // String email = authentication.getName();
+
+        // // email로 userNo 조회 (UserService에 메소드 추가 필요)
+        // int userNo = userService.getUserNoByEmail(email);
+
+        Map<String, Object> result = rankingService.getMyRank(type, userNo);
+        return ResponseEntity.ok(result);
+    }
+
 
     // [RK-04]	랭킹 검색조회	searchRank() (안할거)
     // 랭킹 테이블 레코드를 검색조회한다.

@@ -79,6 +79,175 @@ public interface RankingMapper {
             " limit 10")
     List<Map<String, Object>> getPersistenceRank();
 
+    // ============================================
+    // 신규 쿼리 (게임왕, 출석왕, 포인트왕)
+    // ============================================
+
+    // 4) 게임왕 : 게임 최고 점수 순
+    @Select("select " +
+            " u.nickName , " +
+            " u.userNo , " +
+            " max(g.gameScore) as maxScore , " +
+            " count(*) as totalGames " +
+            " sum(case when g.gameResult >= 1 then 1 else 0 end) as successCount " +
+            " from gameLog g " +
+            " join users u on g.userNo = u.userNo " +
+            " where u.userState = 1 " +
+            " group by u.userNo , u.nickName " +
+            " order by maxScore desc , successCount desc " +
+            " limit 10")
+    List<Map<String, Object>> getGameRank();
+
+    // 5) 출석왕 : 출석 횟수가 가장 많은 순
+    @Select("select " +
+            " u.nickName , " +
+            " u.userNo , " +
+            " count(*) as attendCount , " +
+            " max(a.attenDate) as lastAttendDate " +
+            " from attendance a " +
+            " join users u on a.userNo = u.userNo " +
+            " where u.userState = 1 " +
+            " group by u.userNo , u.nickName " +
+            " order by totalPoint desc , pointLogCount desc " +
+            " limit 10")
+    List<Map<String, Object>> getAttendanceRank();
+
+    // 6) 포인트왕 : 포인트 총합이 높은 순
+    @Select("select " +
+            " u.nickName , " +
+            " u.userNo , " +
+            " sum(pp.updatePoint) as totalPoint , " +
+            " count(*) as pointLogCount " +
+            " from pointLog pl " +
+            " join pointPolicy pp on pl.pointNo = pp.pointNo " +
+            " join users u on pl.userNo = u.userNo " +
+            " where u.userState = 1 " +
+            " group by u.userNo , u.nickName " +
+            " order by totalPoint desc , pointLogCount desc " +
+            " limit 10")
+    List<Map<String , Object>> getPointRank();
+
+    // ============================================
+    // 내 순위 조회 쿼리
+    // ============================================
+
+    //  ROW_NUMBER(): 각 행에 고유한 순차 번호를 부여합니다.
+    //  OVER (...): ROW_NUMBER() 함수가 적용될 범위를 지정합니다.
+
+    // 정답왕 - 내 순위
+    @Select("select " +
+            " ranked.* " +
+            " from (" +
+            "   select " +
+            "     u.nickName ," +
+            "     u.userNo , " +
+            "     sum(case when r.isCorrect = 1 then 1 else 0 end) as score, " +
+            "     count(*) as total, " +
+            "     round(sum(case when r.isCorrect = 1 then 1 else 0 end) * 100.0 / count(*), 2) as accuracy, " +
+            "     row_number() over (order by round(sum(case when r.isCorrect = 1 then 1 else 0 end) * 100.0 / count(*), 2) desc, sum(case when r.isCorrect = 1 then 1 else 0 end) desc) as ranking " +
+            "   from ranking r " +
+            "   join users u on r.userNo = u.userNo " +
+            "   where u.userState = 1 " +
+            "   group by u.userNo , u.nickName " +
+            "   having count(*) >= 3 " +
+            " ) ranked " +
+            " where ranked.userNo = #{userNo}")
+    Map<String , Object> getMyAccuracyRank(@Param("userNo") int userNo);
+
+    // 도전왕 - 내 순위
+    @Select("select " +
+            " ranked.* " +
+            " from (" +
+            "  select " +
+            "    u.nickName , " +
+            "    u.userNo , " +
+            "    count(*) as total , " +
+            "    sum(case when r.isCorrect = 1 then 1 else 0 end) as score, " +
+            "    row_number() over (order by count(*) desc, sum(case when r.isCorrect = 1 then 1 else 0 end) desc) as ranking " +
+            "  from ranking r " +
+            "  join users u on r.userNo = u.userNo " +
+            "  where u.userState = 1 " +
+            "  group by u.userNo , u.nickName " +
+            " ) ranked " +
+            " where ranked.userNo = #{userNo}")
+    Map<String, Object> getMyChallengeRank(@Param("userNo") int userNo);
+
+    // 끈기왕 - 내 순위
+    @Select("select " +
+            " ranked.* " +
+            " from (" +
+            "  select " +
+            "    u.nickName , " +
+            "    u.userNo , " +
+            "    avg(r.testRound) as avgRound , " +
+            "    count(distinct r.testItemNo) as uniqueItems , " +
+            "    count(*) as totalAttempts, " +
+            "    row_number() over (order by avg(r.testRound) desc) as ranking " +
+            "  from ranking r " +
+            "  join users u on r.userNo = u.userNo " +
+            "  where u.userState = 1 " +
+            "  group by u.userNo , u.nickName " +
+            "  having count(*) >= 3 " +
+            " ) ranked " +
+            " where ranked.userNo = #{userNo}")
+    Map<String, Object> getMyPersistenceRank(@Param("userNo") int userNo);
+
+    // 게임왕 - 내 순위
+    @Select("select " +
+            " ranked.*" +
+            " from ( " +
+            "  select " +
+            "     u.nickName , " +
+            "     u.userNo , " +
+            "     max(g.gameScore) as maxScore , " +
+            "     count(*) as totalGames , " +
+            "     sum(case when g.gameResult >= 1 then 1 else 0 end) as successCount, " +
+            "     row_number() over (order by max(g.gameScore) desc, sum(case when g.gameResult >= 1 then 1 else 0 end) desc) as ranking " +
+            "  from gamelog g " +
+            "  join users u on g.userNo = u.userNo " +
+            "  where u.userState = 1 " +
+            "  group by u.userNo , u.nickName " +
+            " ) ranked " +
+            " where ranked.userNo = #{userNo}")
+    Map<String , Object> getMyGameRank(@Param("userNo") int userNo);
+
+    // 출석왕 - 내 순위
+    @Select("select " +
+            " ranked.* " +
+            " from ( " +
+            "  select " +
+            "    u.nickName , " +
+            "    u.userNo , " +
+            "    count(*) as attendCount , " +
+            "    max(a.attenDate) as lastAttendDate , " +
+            "    row_number() over (order by count(*) desc , max(a.attenDate) desc) as ranking " +
+            "  from attendance a " +
+            "  join users u on a.userNo = u.userNo " +
+            "  where u.userState = 1 " +
+            "  group by u.userNo , u.nickName " +
+            " ) ranked " +
+            " where ranked.userNo = #{userNo}")
+    Map<String , Object> getMyAttendanceRank(@Param("userNo") int userNo);
+
+    // 포인트왕 - 내 순위
+    @Select("select " +
+            " ranked.* " +
+            " from ( " +
+            "  select " +
+            "     u.nickName , " +
+            "     u.userNo , " +
+            "     sum(pp.updatePoint) as totalPoint , " +
+            "     count(*) as pointLogCount , " +
+            "     row_number() over (order by sum(pp.updatePoint) desc, count(*) desc) as ranking " +
+            "  from pointLog pl " +
+            "  join pointPolicy pp on pl.pointNo = pp.pointNo " +
+            "  join users u on pl.userNo = u.userNo " +
+            "  where u.userState = 1 " +
+            "  group by u.userNo , u.nickName " +
+            " ) ranked " +
+            " where ranked.userNo = #{userNo}")
+    Map<String , Object> getMyPointRank(@Param("userNo") int userNo);
+
 
     // [RK-04]	랭킹 검색조회	searchRank() (안할거)
     // 랭킹 테이블 레코드를 검색조회한다.

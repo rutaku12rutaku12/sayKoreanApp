@@ -45,13 +45,44 @@ public class RankingService {
     // (isCorrect의 레코드 합산이 가장 높은 사람)
     // 3) 끈기왕 : 같은 문제에 여러번 도전한 순
     // (testRound의 평균값이 가장 높은 사람)
+    // 4) 게임왕 : 게임 기록 점수가 가장 높은 순
+    // (gameScore가 높은 순)
+    // 5) 출석왕 : 출석을 가장 많이 한 사람
+    // (attenNo가 가장 많은 순)
+    // 6) 포인트왕 : 포인트 총합이 높은 순
+    // (pointLog 테이블에서 userNo별로 pointNo를 찾고, pointPolicy 테이블을 pointNo로 join한 후, userNo별 포인트를 확인)
     public List<Map<String, Object>> getRank(String type) {
         return switch (type.toLowerCase()) {
             case "accuracy" -> rankingMapper.getAccuracyRank();         // 정답왕
-            case "challenge" -> rankingMapper.getChallengeRank();      // 도전왕
+            case "challenge" -> rankingMapper.getChallengeRank();       // 도전왕
             case "persistence" -> rankingMapper.getPersistenceRank();   // 끈기왕
+            case "game" -> rankingMapper.getGameRank();                 // 게임왕
+            case "attendance" -> rankingMapper.getAttendanceRank();     // 출석왕
+            case "point" -> rankingMapper.getPointRank();               // 포인트왕
             default -> throw new IllegalArgumentException("잘못된 랭킹 분야가 입력되었습니다: " + type);
         };
+    }
+
+    // 랭킹 분야별조회 - 내 순위
+    // 1~6번 로직에서 현재 접속한 사용자의 순위를 출력
+    public Map<String, Object> getMyRank(String type, int userNo) {
+        Map<String, Object> result = switch (type.toLowerCase()) {
+            case "accuracy" -> rankingMapper.getMyAccuracyRank(userNo);         // 정답왕
+            case "challenge" -> rankingMapper.getMyChallengeRank(userNo);       // 도전왕
+            case "persistence" -> rankingMapper.getMyPersistenceRank(userNo);   // 끈기왕
+            case "game" -> rankingMapper.getMyGameRank(userNo);                 // 게임왕
+            case "attendance" -> rankingMapper.getMyAttendanceRank(userNo);     // 출석왕
+            case "point" -> rankingMapper.getMyPointRank(userNo);               // 포인트왕
+            default -> throw new IllegalArgumentException("잘못된 랭킹 분야가 입력되었습니다: " + type);
+        };
+
+        // 순위가 없는 경우 (데이터가 없거나 조건 미충족)
+        if (result == null){
+            throw new IllegalArgumentException("해당 분야의 랭킹 정보가 없습니다. 더 많은 활동을 해보세요!");
+        }
+
+        return result;
+
     }
 
     // [RK-04]	랭킹 검색조회	searchRank() (안할거)
