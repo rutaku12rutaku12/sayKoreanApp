@@ -39,28 +39,50 @@ public interface TestMapper { // mapper start
      * @param langNo 언어 번호 (1=한국어, 2=일본어, 3=중국어, 4=영어, 5=스페인어)
      * @return 언어별 시험 제목이 포함된 TestDto 리스트
      */
-// 새로 추가: 내가 학습완료한 주제들의 테스트 목록
+
+    // 1) 공통 ResultMap 정의 (한 번만) //
     @Select("""
         SELECT
-            t.testNo,
-            t.studyNo,
+            testNo,
+            studyNo,
             CASE #{langNo}
-                WHEN 1 THEN t.testTitle
-                WHEN 2 THEN t.testTitleJp
-                WHEN 3 THEN t.testTitleCn
-                WHEN 4 THEN t.testTitleEn
-                WHEN 5 THEN t.testTitleEs
-                ELSE t.testTitle
+                WHEN 1 THEN testTitle
+                WHEN 2 THEN testTitleJp
+                WHEN 3 THEN testTitleCn
+                WHEN 4 THEN testTitleEn
+                WHEN 5 THEN testTitleEs
+                ELSE testTitle
             END AS testTitleSelected
-        FROM test t
-        JOIN study_progress p ON p.studyNo = t.studyNo   -- 실제 완료/진행 테이블명으로 수정
-        WHERE p.userNo = #{userNo}
-          AND p.isCompleted = 1                          -- 실제 완료 플래그 컬럼명으로 수정
-        ORDER BY t.testNo DESC
+        FROM test
+        ORDER BY testNo DESC
     """)
-    @ResultMap("TestMap")
-    List<TestDto> getTestsOfCompletedStudies(
-            @Param("userNo") int userNo,
+    @Results(id = "TestMap", value = {
+            @Result(column = "testNo",  property = "testNo",  id = true),
+            @Result(column = "studyNo", property = "studyNo"),
+            @Result(column = "testTitleSelected", property = "testTitleSelected")
+    })
+    List<TestDto> getListTest(@Param("langNo") int langNo);
+
+    // 2) studyNo로 필터링 하는 새 메서드
+    @Select("""
+        SELECT
+            testNo,
+            studyNo,
+            CASE #{langNo}
+                WHEN 1 THEN testTitle
+                WHEN 2 THEN testTitleJp
+                WHEN 3 THEN testTitleCn
+                WHEN 4 THEN testTitleEn
+                WHEN 5 THEN testTitleEs
+                ELSE testTitle
+            END AS testTitleSelected
+        FROM test
+        WHERE studyNo = #{studyNo}
+        ORDER BY testNo DESC
+    """)
+    @ResultMap("TestMap")  // 여기서는 id 선언하지 말고 재사용만
+    List<TestDto> findByStudyNo(
+            @Param("studyNo") int studyNo,
             @Param("langNo") int langNo
     );
 
