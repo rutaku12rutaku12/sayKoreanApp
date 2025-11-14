@@ -3,7 +3,10 @@ package web.controller.community;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import web.model.dto.community.FriendsDto;
 import web.service.community.FriendsService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/friends")
@@ -24,6 +27,12 @@ public class FriendsController {
         return ResponseEntity.ok(friendsService.acceptFriend(offer, receiver));
     }
 
+    //친구 거절
+    @DeleteMapping("/refusal")
+    public ResponseEntity<?> refusalFriend(@RequestParam int offer, @RequestParam int receiver){
+        return ResponseEntity.ok(friendsService.refusalFriend(offer, receiver));
+    }
+
     //친구 삭제
     @DeleteMapping("/delete")
     public ResponseEntity<?> deleteFriend(@RequestParam int offer, @RequestParam int receiver){
@@ -34,6 +43,12 @@ public class FriendsController {
     @DeleteMapping("/block")
     public ResponseEntity<?> blockFriend(@RequestParam int offer, @RequestParam int receiver){
         return ResponseEntity.ok(friendsService.blockFriend(offer, receiver));
+    }
+
+    //요청 받은 목록 조회
+    @GetMapping("/requests/recv")
+    public ResponseEntity<List<FriendsDto>> requestsList(@RequestParam int userNo){
+        return ResponseEntity.ok(friendsService.requestsList(userNo));
     }
 
     //내 친구 목록 조회
