@@ -48,13 +48,10 @@ public class TestService {
      *
      * 주의: mapper 구현에서 langNo를 적절히 활용해야 올바른 목록이 내려감
      */
-    public List<TestDto> getListTest(int langNo) {
-        return testMapper.getListTest(langNo);
+    public List<TestDto> getTestsOfCompletedStudies(int userNo, int langNo) {
+        return testMapper.getTestsOfCompletedStudies(userNo, langNo);
     }
 
-    public List<TestDto> findByStudyNo(int studyNo, int langNo) {
-        return testMapper.findByStudyNo( studyNo, langNo );
-    }
 
     /*
      * [2] 문항 목록 (이미지/오디오 + 난수 옵션까지 포함)
