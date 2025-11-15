@@ -25,7 +25,7 @@ public class AuthUtil {
                     return jwtUtil.getUserNo(token);
                 }
             }
-            System.out.println("Flutter 인증 실패: 토크느이 없거나 유효하지 않음");
+            System.out.println("Flutter 인증 실패: 토큰이 없거나 유효하지 않음");
             return null;
         } else {
             HttpSession session = request.getSession(false);

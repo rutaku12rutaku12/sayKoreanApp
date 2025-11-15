@@ -57,7 +57,7 @@ public class JwtUtil {
         return null; // 유효하지 않은 토큰 또는 오류 발생시 null 반환
     } // f end
 
-    // [3] 토큰에서 userNO 추출
+    // [3] 토큰에서 userNo 추출
     public Integer getUserNo(String token) {
         try{
             Claims claims = Jwts.parser()
