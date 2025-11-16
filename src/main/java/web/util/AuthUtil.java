@@ -27,7 +27,7 @@ public class AuthUtil {
             }
             System.out.println("Flutter 인증 실패: 토큰이 없거나 유효하지 않음");
             return null;
-        } else {
+        } else {// 세션 객체 꺼내기
             HttpSession session = request.getSession(false);
             if (session == null || session.getAttribute("userNo") == null){
                 System.out.println("세션 인증 실패: 세션이 없거나 userNo가 없음");

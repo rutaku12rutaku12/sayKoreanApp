@@ -170,6 +170,7 @@ public class UserController {
     // [US-09] 회원정보 수정 updateUserInfo()
     @PutMapping("/updateuserinfo")
     public ResponseEntity<Integer> updateUserInfo(@Valid @RequestBody UpdateUserInfoDto updateUserInfoDto , HttpServletRequest request ){
+        // 세션 또는 토큰 꺼내기
         Integer userNo = authUtil.getUserNo(request);
         // 만약 세션이 없거나 로그인이 안되어 있으면 null
         if( userNo == null ){
@@ -177,7 +178,7 @@ public class UserController {
             return ResponseEntity.status(401).body(null);
         }
         // 로그인된 사용자번호 꺼내기 = 수정하는 사용자의 번호
-        System.out.println(userNo+" : 현재 수정할 사용자의 번호");
+        System.out.println("현재 수정할 사용자의 번호 : "+userNo);
         // dto 담아주기
         updateUserInfoDto.setUserNo(userNo);
         int result = userService.updateUserInfo(updateUserInfoDto);
@@ -188,15 +189,15 @@ public class UserController {
     // [US-10] 비밀번호 수정 updatePwrd()
     @PutMapping("/updatepwrd")
     public ResponseEntity<?> updatePwrd(@Valid @RequestBody UpdatePwrdDto updatePwrdDto , HttpServletRequest request){
-        // 세션 객체 꺼내기
-        HttpSession session = request.getSession();
-        // 만약 세션이 없거나 로그인이 안되어 있으면 null
-        if( session == null || session.getAttribute("userNo") ==null ){
-            return ResponseEntity.status(400).body("로그인 정보 세션 존재x, 로그인 필요");
+        // 세션 또는 토큰 꺼내기
+        Integer userNo = authUtil.getUserNo(request);
+        // 만약 세션이 없거나 토큰이 없으면 null
+        if( userNo == null ){
+            System.out.println("인증 실패: userNo를 가져올 수 없음");
+            return ResponseEntity.status(401).body(null);
         }
         // 로그인된 사용자번호 꺼내기 = 수정하는 사용자의 번호
-        Object obj = session.getAttribute("userNo");
-        int userNo = (int)obj;
+        System.out.println("현재 수정할 사용자의 번호 : "+userNo);
         // dto 담아주기
         updatePwrdDto.setUserNo(userNo);
         UpdatePwrdDto result = userService.updatePwrd(updatePwrdDto);
