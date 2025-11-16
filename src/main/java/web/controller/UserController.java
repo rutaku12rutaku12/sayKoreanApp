@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import web.util.AuthUtil;
 
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/saykorean")
 @RequiredArgsConstructor
@@ -211,20 +213,20 @@ public class UserController {
     // [US-11] 회원상태 수정(삭제) deleteUserStatus()
     @PutMapping("/deleteuser")
     public ResponseEntity<Integer> deleteUserStatus(@Valid @RequestBody DeleteUserStatusDto deleteUserStatusDto, HttpServletRequest request){
-        HttpSession session = request.getSession();
-        if(session==null || session.getAttribute("userNo")==null){
-            return ResponseEntity.status(400).body(0);
+        // 세션 또는 토큰 꺼내기
+        Integer userNo= authUtil.getUserNo(request);
+        if(userNo==null){
+            System.out.println("인증 실패: userNo를 가져올 수 없음");
+            return ResponseEntity.status(401).body(null);
         }
-        Object obj = session.getAttribute("userNo");
-        if(obj == null){
-            return ResponseEntity.status(400).body(0);
-        }
-        int userNo = (int)obj;
+        // 로그인된 사용자번호 꺼내기 = 탈퇴하는 사용자의 번호
+        System.out.println("현재 탈퇴할 사용자의 번호 : "+userNo);
+        // dto 담아주기
         deleteUserStatusDto.setUserNo(userNo);
         int result = userService.deleteUserStatus(deleteUserStatusDto);
         if( result > 0){
         // 회원상태 수정(삭제) 후 세션 제거 : 로그아웃 상태로
-        session.removeAttribute("userNo");
+        logOut(request);
             System.out.println(result);
         return ResponseEntity.status(200).body(result);
         }
