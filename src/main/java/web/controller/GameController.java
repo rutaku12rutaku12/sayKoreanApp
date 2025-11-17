@@ -45,7 +45,7 @@ public class GameController {
     private final AuthUtil authUtil;
     
     // 테스트 모드 플래그 ( JWT 이식 전에 테스트용. 실제 배포 시에는 false로 변경!)
-    private static final boolean TEST_MODE = true;
+    private static final boolean TEST_MODE = false;
     private static final int TEST_USER_NO = 1;  // 테스트용 기본 사용자 번호
 
     // 플러터에서는 세션 안 먹힘! [GL-NN] 사용자 게임 관련 메소드는 JWT 토큰으로 처리할 것.
