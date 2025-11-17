@@ -16,8 +16,8 @@ public class FriendsController {
 
     //친구 요청
     @PostMapping("/add")
-    public ResponseEntity<?> addFriend(@RequestParam int offer, @RequestParam int receiver){
-        return ResponseEntity.ok(friendsService.addFriend(offer, receiver));
+    public ResponseEntity<?> addFriend(@RequestParam int offer, @RequestParam String email){
+        return ResponseEntity.ok(friendsService.addFriend(offer, email));
     }
 
     //친구 수락
@@ -52,7 +52,7 @@ public class FriendsController {
     }
 
     //내 친구 목록 조회
-    @PutMapping("/list")
+    @GetMapping("/list")
     public ResponseEntity<?> FriendsList(@RequestParam int userNo){
         return ResponseEntity.ok(friendsService.friendList(userNo));
     }

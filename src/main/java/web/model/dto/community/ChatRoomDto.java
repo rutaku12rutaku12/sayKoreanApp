@@ -6,11 +6,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data@AllArgsConstructor@NoArgsConstructor@Builder
-public class FriendsDto {
-    private int frenNo;
-    private int frenStatus;
-    private String frenUpdate;
-    private int offer;
-    private int receiver;
+public class ChatRoomDto {
+    private int roomNo;
+    private String chatListTitle;
+    private int friendNo;
     private String friendName;
+    private String lastMessage;
+    private String lastTime;
 }
