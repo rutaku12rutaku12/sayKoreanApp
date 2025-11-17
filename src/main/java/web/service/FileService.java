@@ -27,29 +27,21 @@ public class FileService {
         return uploadFile(file, "image/", examNo, "img");
     }
 
-    // [2-1] 오디오 파일 업로드
+    // [2-1] 오디오 파일 업로드 (다국어 지원)
     public String uploadAudio(MultipartFile file, int examNo, int lang) throws IOException {
-        String langCode;
-        switch (lang) {
-            case 1 -> langCode = "kor";
-            case 2 -> langCode = "eng";
-            default -> throw new IllegalArgumentException("지원하지 않는 언어 코드입니다. (1=kor, 2=eng)");
-        }
+        String langCode = getLangCode(lang);
+
         // 'audio/' 서브디렉토리에 저장
         return uploadFile(file, "audio/", examNo, langCode + "_voice");
     }
 
     // [2-2] TTS로 생성된 오디오 바이트 배열 저장
     public String uploadAudioFromBytes(byte[] audioData, int examNo, int lang) throws IOException {
-        String langCode;
-        switch (lang) {
-            case 1 -> langCode = "kor";
-            case 2 -> langCode = "eng";
-            default -> throw new IllegalArgumentException("지원하지 않는 언어 코드입니다.");
-        }
+        String langCode = getLangCode(lang);
 
         LocalDate now = LocalDate.now();
-        String monthDir = now.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH).toLowerCase() + "_" + String.valueOf(now.getYear()).substring(2);
+        String monthDir = now.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH).toLowerCase()
+                + "_" + String.valueOf(now.getYear()).substring(2);
 
         // 2. 저장 경로를 외부 경로 기준으로 재구성
         String relativePath = "audio/" + monthDir + "/";
@@ -69,6 +61,18 @@ public class FileService {
 
         // 3. DB에 저장할 URL 경로는 그대로 유지
         return "/upload/audio/" + monthDir + "/" + newFileName;
+    }
+
+    // [*] 언어 코드를 파일명용 코드로 전환하는 메소드
+    private String getLangCode(int lang) {
+        return switch (lang) {
+            case 1 -> "kor";    // 한국어
+            case 2 -> "jpn";    // 일본어
+            case 3 -> "chn";    // 중국어
+            case 4 -> "eng";    // 영어
+            case 5 -> "esp";    // 스페인어
+            default -> throw new IllegalArgumentException("지원하지 않는 언어 코드입니다: " + lang);
+        };
     }
 
     // [3] 공통 파일 업로드 로직

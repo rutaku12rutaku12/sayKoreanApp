@@ -46,8 +46,20 @@ export default function AdminStudyCreate(props) {
 
     // [*] 언어 코드 매핑 (Google TTS 형식)
     const languageCodeMap = {
-        1: 'ko-KR',
-        2: 'en-US'
+        1: 'ko-KR', // 한국어
+        2: 'ja-JP', // 일본어
+        3: 'zh-CN', // 중국어
+        4: 'en-US', // 영어
+        5: 'es-ES'  // 스페인어
+    };
+
+    // [*] 언어 표시명 매핑
+    const languageNameMap = {
+        1: '한국어',
+        2: '일본어',
+        3: '중국어',
+        4: '영어',
+        5: '스페인어'
     };
 
     // [*] 컴포넌트 마운트 시 장르 목록 불러오기
@@ -247,10 +259,16 @@ export default function AdminStudyCreate(props) {
         })
     }
 
-    // [5-2] 음성 TTS 추가 핸들러
+    // [5-2] 음성 TTS 추가 핸들러 (다국어 지원)
     const handleAddAudioTTS = (examIndex, lang, text) => {
         if (!text || !text.trim()) {
             alert("텍스트를 입력해주세요.")
+            return;
+        }
+
+        // 언어 코드 유효성 검사
+        if (!languageCodeMap[lang]) {
+            alert("지원하지 않는 언어입니다.");
             return;
         }
 
@@ -366,8 +384,7 @@ export default function AdminStudyCreate(props) {
 
     // [8] 언어 설정 함수
     const getLangText = (lang) => {
-        const langMap = { 1: '한국어', 2: '영어' };
-        return langMap[lang] || '알 수 없음';
+        return languageNameMap[lang] || '알 수 없음';
     }
 
     return (
@@ -656,7 +673,9 @@ export default function AdminStudyCreate(props) {
 
                             {/* 방법 2: TTS로 생성 */}
                             <div className="admin-audio-method admin-audio-method-tts">
-                                <label className="admin-form-label" style={{ color: '#388E3C' }}>🤖 방법 2: TTS로 음성 생성 (Google AI)</label>
+                                <label className="admin-form-label" style={{ color: '#388E3C' }}>
+                                    🤖 방법 2: TTS로 음성 생성 (Google AI)
+                                </label>
                                 <div className="admin-file-inline">
                                     <select
                                         id={`ttsLang-${examIndex}`}
@@ -665,16 +684,22 @@ export default function AdminStudyCreate(props) {
                                             const lang = parseInt(e.target.value);
                                             const inputBox = document.getElementById(`ttsText-${examIndex}`);
                                             let newText = "";
-                                            if (lang === 1) {
-                                                newText = exam.examKo || '';
-                                            } else if (lang === 2) {
-                                                newText = exam.examEn || '';
+                                            // 선택한 언어에 맞는 예문 자동 입력
+                                            switch (lang) {
+                                                case 1: newText = exam.examKo || ''; break;
+                                                case 2: newText = exam.examJp || ''; break;
+                                                case 3: newText = exam.examCn || ''; break;
+                                                case 4: newText = exam.examEn || ''; break;
+                                                case 5: newText = exam.examEs || ''; break;
                                             }
                                             inputBox.value = newText;
                                         }}
                                     >
                                         <option value={1}>한국어</option>
-                                        <option value={2}>영어</option>
+                                        <option value={2}>일본어</option>
+                                        <option value={3}>중국어</option>
+                                        <option value={4}>영어</option>
+                                        <option value={5}>스페인어</option>
                                     </select>
                                     <input
                                         type="text"

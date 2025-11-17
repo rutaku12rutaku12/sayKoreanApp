@@ -21,4 +21,7 @@ public class TestDto {
     private String testTitleSelected; // 조회 시 사용자 언어 설정에 따른 제목
     private int studyNo; // 교육번호(FK)
 
+    // [추가] 시험 모드 필드
+    private String testMode;    // REGULAR , DAILY , INFINITE , HARD
+
 }

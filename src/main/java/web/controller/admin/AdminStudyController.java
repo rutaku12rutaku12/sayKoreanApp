@@ -4,12 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import web.model.dto.study.*;
 import web.service.admin.AdminStudyService;
+import web.service.admin.ExcelService;
 import web.service.admin.RomanizerService;
 import web.service.admin.TranslationService;
 
@@ -49,6 +52,7 @@ public class AdminStudyController {
     private final AdminStudyService adminStudyService;
     private final TranslationService translationService;
     private final RomanizerService romanizerService;
+    private final ExcelService excelService;
 
     // [AUTO-Translate] 자동 번역 컨트롤러
     @PostMapping("/translate")
@@ -213,6 +217,34 @@ public class AdminStudyController {
     public ResponseEntity<ExamDto> getIndiExam(@RequestParam int examNo) {
         ExamDto result = adminStudyService.getIndiExam(examNo);
         return ResponseEntity.ok(result);
+    }
+
+    // [AEX-06]	예문 이미지 생성	createImageForExam()
+    // 예문에 저장할 이미지를 생성 후 저장한다.
+    // * 추가 : 이미지 생성 로직 (파이썬)
+
+
+    // [AEX-07]	전체 예문 언어별 엑셀 출력	downloadExamExcel()
+    // URL : http://localhost:8080/saykorean/admin/study/exam/excel
+    @GetMapping("/exam/excel")
+    public ResponseEntity<byte[]> downloadExamExcel() {
+        log.info("예문 엑셀 다운로드 요청");
+        try {
+
+            byte[] excelData = excelService.generateExamExcel();;
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            // 네이밍 공식
+            headers.setContentDispositionFormData("attachment" ,
+                    "saykorean_exams_" + java.time.LocalDate.now() + ".xlsx");
+
+            return ResponseEntity.ok().headers(headers).body(excelData);
+
+        } catch (Exception e) {
+            log.error("엑셀 생성 실패" , e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
 

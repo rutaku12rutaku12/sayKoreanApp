@@ -162,5 +162,33 @@ export const audioApi = {
     delete: (audioNo) => api.delete(`/audio?audioNo=${audioNo}`),
 };
 
+// [5] 예문 엑셀 다운로드 API
+export const examExcelApi = {
+    // 엑셀 파일 다운로드
+    download: async () => {
+        try {
+            const res = await api.get('/study/exam/excel', {
+                responseType: 'blob' // 파일 다운로드를 위해 blob 타입 설정 , responseType은 리액트에서 만든 함수니까 변수명 못바꿈!
+            });
+
+            // Blob으로 파일 다운로드
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download' , `saykorean_exams_${new Date().toISOString().split('T')[0]}.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+
+            return { success : true };
+
+        } catch (e) {
+            console.error('엑셀 다운로드 실패: ', e)
+            throw e;
+        }
+    }
+}
+
 // export
 export default api;

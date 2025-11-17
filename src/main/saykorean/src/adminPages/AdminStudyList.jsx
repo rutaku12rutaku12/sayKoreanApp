@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setGenres, setStudies, setExams, setAudios } from "../store/adminSlice";
-import { audioApi, examApi, genreApi, studyApi } from "../api/adminApi";
+import { audioApi, examApi, examExcelApi, genreApi, studyApi } from "../api/adminApi";
 import "../styles/AdminCommon.css";
 
 // 이미지/오디오 경로를 절대 URL로 변환하는 헬퍼 함수
@@ -25,7 +25,7 @@ export default function AdminStudyList(props) {
     // [*] 상세보기 상태 관리
     const [selectedGenreNo, setSelectedGenreNo] = useState(null);
     const [selectedStudyNo, setSelectedStudyNo] = useState(null);
-    const [loading , setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     // [*] 마운트 시 교육 전체 출력 로직
     useEffect(() => {
@@ -135,16 +135,43 @@ export default function AdminStudyList(props) {
         return langMap[lang] || '알 수 없는 언어코드입니다.';
     }
 
+    // [*] 엑셀 다운로드 핸들러 추가
+    const handleDownloadExcel = async () => {
+        if (!window.confirm('전체 예문을 엑셀 파일로 다운로드하시겠습니까?')) return;
+
+        try {
+            setLoading(true);
+            await examExcelApi.download();
+            alert('엑셀 파일이 다운로드되었습니다.');
+        } catch (e) {
+            console.error('엑셀 다운로드 실패:', e);
+            alert('엑셀 다운로드 중 오류가 발생했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return (
         <div className="admin-container">
             <div className="admin-header">
                 <h2>교육 관리</h2>
-                <button
-                    onClick={() => navigate('/admin/study/create')}
-                    className="admin-btn admin-btn-success"
-                >
-                    새 교육 등록
-                </button>
+
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    {/* 엑셀 다운로드 버튼 추가 */}
+                    <button
+                        onClick={handleDownloadExcel}
+                        className="admin-btn admin-btn-info"
+                        disabled={loading}
+                    >
+                        📊 예문 엑셀 다운로드
+                    </button>
+                    <button
+                        onClick={() => navigate('/admin/study/create')}
+                        className="admin-btn admin-btn-success"
+                    >
+                        새 교육 등록
+                    </button>
+                </div>
             </div>
 
             {/* 장르 목록 */}
@@ -280,10 +307,10 @@ export default function AdminStudyList(props) {
                                                                             alt="예문 이미지"
                                                                             className="admin-image-preview"
                                                                             onLoad={() => console.log('✅ 이미지 로드 성공:', exam.imagePath)}
-                                                                            onError={(e) => { 
+                                                                            onError={(e) => {
                                                                                 console.error("❌ 이미지 로드 실패:", exam.imagePath);
                                                                                 console.error("시도한 URL:", e.target.src);
-                                                                                e.target.style.display = 'none'; 
+                                                                                e.target.style.display = 'none';
                                                                             }}
                                                                         />
                                                                     </div>
@@ -300,8 +327,8 @@ export default function AdminStudyList(props) {
                                                                                         {getLangText(audio.lang)} - {audio.audioName}
                                                                                     </span>
                                                                                     {audio.audioPath && (
-                                                                                        <audio 
-                                                                                            controls 
+                                                                                        <audio
+                                                                                            controls
                                                                                             style={{ display: 'block', marginTop: '5px', maxWidth: '300px' }}
                                                                                             onError={(e) => console.error('❌ 오디오 로드 실패:', audio.audioPath)}
                                                                                         >

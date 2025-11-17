@@ -98,6 +98,36 @@ public class AdminTestController {
         return Map.of("original" , text , "romanized" , romanized);
     }
 
+    // [ATE-DAILY] 일일시험 생성 createDailyTest()
+    // URL : http://localhost:8080/saykorean/admin/test/daily
+    // BODY : { "testTitle": "오늘의 일일시험", "studyNo": 1 }
+    @PostMapping("/daily")
+    public ResponseEntity<Map<String, Object>> createDailyTest(@RequestBody TestDto testDto) {
+        testDto.setTestMode("DAILY");
+        Map<String, Object> result = adminTestService.createDailyTest(testDto);
+        return ResponseEntity.ok(result);
+    }
+
+    // [ATE-INFINITE] 무한모드 시험 생성 createInfiniteTest()
+    // URL : http://localhost:8080/saykorean/admin/test/infinite
+    // BODY : { "testTitle": "무한모드", "studyNo": 1 }
+    @PostMapping("/infinite")
+    public ResponseEntity<Map<String, Object>> createInfiniteTest(@RequestBody TestDto testDto) {
+        testDto.setTestMode("INFINITE");
+        Map<String, Object> result = adminTestService.createInfiniteTest(testDto);
+        return ResponseEntity.ok(result);
+    }
+
+    // [ATE-HARD] 하드모드 시험 생성 createHardTest()
+    // URL : http://localhost:8080/saykorean/admin/test/hard
+    // BODY : { "testTitle": "하드모드", "studyNo": 1 }
+    @PostMapping("/hard")
+    public ResponseEntity<Map<String, Object>> createHardTest(@RequestBody TestDto testDto) {
+        testDto.setTestMode("HARD");
+        Map<String, Object> result = adminTestService.createHardTest(testDto);
+        return ResponseEntity.ok(result);
+    }
+
     // [ATE-02] 시험 수정 updateTest()
     // 시험 테이블 레코드를 변경한다
     // 매개변수 TestDto

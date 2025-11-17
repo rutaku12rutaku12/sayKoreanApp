@@ -63,21 +63,26 @@ public class AudioController {
         return ResponseEntity.ok(result);
     }
 
-    // [AAD-01-TTS] 음성파일 생성(TTS 사용)
+    // [AAD-01-TTS] 음성파일 생성(TTS 사용) - 다국어지원
     // URL : http://localhost:8080/saykorean/admin/audio/tts
     // BODY : { "text": "안녕하세요", "languageCode": "ko-KR", "examNo": 1, "lang": 1 }
     @PostMapping("/tts")
-    public ResponseEntity<Integer> createAudioFromTTS(@RequestBody TtsRequestDto ttsRequest) throws IOException {
+    public ResponseEntity<Integer> createAudioFromTTS(@RequestBody TtsRequestDto ttsRequest) {
         try {
             log.info("TTS 요청 - 텍스트: {}, 언어: {}, examNo: {}",
-                    ttsRequest.getText() , ttsRequest.getLanguageCode(), ttsRequest.getExamNo());
+                    ttsRequest.getText(), ttsRequest.getLanguageCode(), ttsRequest.getExamNo());
+
+            // 언어 코드 유효성 검사
+            if (!isValidLanguageCode(ttsRequest.getLanguageCode())) {
+                throw new IllegalArgumentException("지원하지 않는 언어 코드입니다:" + ttsRequest.getLanguageCode());
+            }
 
             // 1. Google TTS API 호출하여 음성 데이터 생성
             byte[] audioData = translationService.textToSpeech(
-                    ttsRequest.getText() ,
+                    ttsRequest.getText(),
                     ttsRequest.getLanguageCode()
             );
-            
+
             // 2. AudioDto 생성
             AudioDto audioDto = new AudioDto();
             audioDto.setExamNo(ttsRequest.getExamNo());
@@ -86,13 +91,28 @@ public class AudioController {
             // 3. 음성 파일 저장
             int result = audioService.createAudioFromBytes(audioDto, audioData);
 
-            log.info("TTS 음성 파일 생성 완료 - audioNo: {}" , result);
+            log.info("TTS 음성 파일 생성 완료 - audioNo: {}", result);
             return ResponseEntity.ok(result);
 
+        } catch (IllegalArgumentException e) {
+            log.error("TTS 언어 코드 오류" , e);
+            throw new RuntimeException("지원하지 않는 언어입니다: " + e.getMessage());
         } catch (Exception e){
             log.error("TTS 음성 파일 생성 실패" , e);
             throw new RuntimeException("음성 파일 생성에 실패했습니다: " + e.getMessage());
         }
+    }
+
+    // [*] 지원하는 언어코드 검사 isValidLanguageCode()
+    private boolean isValidLanguageCode(String languageCode){
+        List<String> supportedLanguages = List.of(
+                "ko-KR" ,   // 한국어
+                "ja-JP" ,   // 일본어
+                "zh-CN" ,   // 중국어 (간체)
+                "en-US" ,   // 영어
+                "es-ES"     // 스페인어
+        );
+        return supportedLanguages.contains(languageCode);
     }
 
 

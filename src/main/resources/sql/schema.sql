@@ -181,7 +181,8 @@ CREATE TABLE IF NOT EXISTS test (
 ) ENGINE=InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci;
-
+ALTER TABLE test ADD COLUMN testMode VARCHAR(20) DEFAULT 'REGULAR'
+COMMENT '시험 모드 (REGULAR=정기시험, DAILY=일일시험, INFINITE=무한모드, HARD=하드모드)';
 
 -- =====================================================================
 -- 8) 시험문항 테이블 (3단계 - FK: examNo, testNo)

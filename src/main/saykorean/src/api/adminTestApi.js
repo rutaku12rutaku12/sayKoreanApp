@@ -26,12 +26,18 @@ export const testApi = {
     update: (testDto) => api.put("/test", testDto),
     // 6) 시험 삭제
     delete: (testNo) => api.delete(`/test?testNo=${testNo}`),
-    // 7) 특정 시험 문항 목록 조회
+    // 7) 일일시험 생성
+    createDaily: (testDto) => api.post("/test/daily", testDto),
+    // 8) 무한모드 시험 생성
+    createInfinite: (testDto) => api.post("/test/infinite", testDto),
+    // 9) 하드모드 시험 생성
+    createHard: (testDto) => api.post("/test/hard", testDto),
+    // 10) 특정 시험 문항 목록 조회
     getItemsByTestNo: (testNo) => api.get(`/test/${testNo}/items`),
-    // 8) 시험 제목/문항 자동 번역
+    // 11) 시험 제목/문항 자동 번역
     translate: (testTranslationRequestDto) =>
         api.post("/test/translate", testTranslationRequestDto),
-    // [*] 9) 시험 제목/문항 발음기호 자동 생성 (추가)
+    // [*] 12) 시험 제목/문항 발음기호 자동 생성 (추가)
     // AdminTestController.java의 @GetMapping("/romanize") 엔드포인트와 연결됩니다.
     // BASE_URL + "/test/romanize" 경로로 요청이 전송됩니다.
     romanize: (text) => api.get(`/test/romanize?text=${text}`),

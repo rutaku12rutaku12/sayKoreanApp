@@ -9,7 +9,7 @@ import java.util.List;
 @Mapper
 public interface AdminTestMapper {
 
-    // [ATE-01] 시험 생성 createTest()
+    // [ATE-01] 시험 생성 createTest() - testMode 필드 추가
     // 시험 테이블 레코드를 추가한다
     // 매개변수 TestDto
     // 반환 int (PK)
@@ -17,12 +17,12 @@ public interface AdminTestMapper {
     // 2) 시험제목(testTitle)을 입력받는다
     // 3) 해당하는 Study 테이블의 studyNo를 FK로 받는다."
     // 4) * 난수화해서 다른 문제에 생성될 수 있도록 하기 *
-    @Insert("insert into test (testTitle, testTitleRoman, testTitleJp, testTitleCn, testTitleEn, testTitleEs, studyNo) " +
-            "values (#{testTitle}, #{testTitleRoman}, #{testTitleJp}, #{testTitleCn}, #{testTitleEn}, #{testTitleEs}, #{studyNo})")
+    @Insert("insert into test (testTitle, testTitleRoman, testTitleJp, testTitleCn, testTitleEn, testTitleEs, studyNo, testMode) " +
+            "values (#{testTitle}, #{testTitleRoman}, #{testTitleJp}, #{testTitleCn}, #{testTitleEn}, #{testTitleEs}, #{studyNo}, #{testMode})")
     @Options(useGeneratedKeys = true, keyProperty = "testNo")
     int createTest(TestDto testDto);
 
-    // [ATE-02] 시험 수정 updateTest()
+    // [ATE-02] 시험 수정 updateTest() - testMode 필드 추가
     // 시험 테이블 레코드를 변경한다
     // 매개변수 TestDto
     // 반환 int
@@ -35,7 +35,8 @@ public interface AdminTestMapper {
             "testTitleCn = #{testTitleCn}, " +
             "testTitleEn = #{testTitleEn}, " +
             "testTitleEs = #{testTitleEs}, " +
-            "studyNo = #{studyNo} " +
+            "studyNo = #{studyNo}, " +
+            "testMode = #{testMode} " +
             "where testNo = #{testNo}")
     int updateTest(TestDto testDto);
 

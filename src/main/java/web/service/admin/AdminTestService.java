@@ -100,6 +100,132 @@ public class AdminTestService {
         return itemNos;
     }
 
+    // [*] 일일시험 : 매일 다른 문제로 시험 생성 (난수화)
+    // 배운 예문 중 매일 랜덤하게 3개 선택
+    // 그림/음성/주관식 각 1문제씩
+
+    public Map<String, Object> createDailyTest(TestDto testDto) {
+        adminTestMapper.createTest(testDto);
+        int testNo = testDto.getTestNo();
+
+        List<ExamDto> allExams = adminStudyMapper.getExamsByStudyNo(testDto.getStudyNo());
+
+        if (allExams.size() < 3) {
+            return Map.of(
+                    "testNo" , testNo,
+                    "message" , "해당 주제의 예문이 3개 미만입니다." ,
+                    "itemsCreated" , 0
+            );
+        }
+
+        // 난수화
+        Collections.shuffle(allExams);
+        List<ExamDto> selectedExams = allExams.subList(0, Math.min(3, allExams.size()));
+
+        // 문항 생성
+        List<TestItemDto> createdItems = new ArrayList<>();
+        String[] questionTypes = {"그림:", "음성:", "주관식:" };
+
+        for (int i = 0; i < selectedExams.size(); i++) {
+            ExamDto exam = selectedExams.get(i);
+            TestItemDto item = new TestItemDto();
+            item.setTestNo(testNo);
+            item.setExamNo(exam.getExamNo());
+
+            String question = questionTypes[i] + " 올바른 표현을 고르세요.";
+            if (i == 2) {
+                question = "주관식: 다음 상황에 맞는 한국어 표현을 작성하세요.";
+            }
+
+            item.setQuestion(question);
+            adminTestMapper.createTestItem(item);
+            createdItems.add(item);
+        }
+
+        return Map.of(
+                "testNo" , testNo,
+                "itemsCreated" , createdItems.size(),
+                "items" , createdItems,
+                "mode" , "DAILY"
+        );
+    }
+
+    // [*] 무한모드 : 배운 내용 중 틀릴 때까지 특정 주제의 모든 예문을 난수화하여 제공
+    // 프론트엔드에서 틀리면 종료
+    public Map<String , Object> createInfiniteTest(TestDto testDto) {
+        adminTestMapper.createTest(testDto);
+        int testNo = testDto.getTestNo();
+
+
+        List <ExamDto> allExams = adminStudyMapper.getExamsByStudyNo(testDto.getStudyNo());
+        Collections.shuffle(allExams);
+
+        List<TestItemDto> createdItems = new ArrayList<>();
+
+        for (ExamDto exam : allExams) {
+            TestItemDto item = new TestItemDto();
+            item.setTestNo(testNo);
+            item.setExamNo(exam.getExamNo());
+
+            // 랜덤하게 문제 유형 배정
+            String[] questionTypes = {"그림:" , "음성:" , "주관식:"};
+            int randomType = (int) (Math.random() * 3);
+
+            String question = questionTypes[randomType] + " 올바른 표현을 고르세요.";
+            if (randomType == 2) {
+                question = "주관식: 다음 상황에 맞는 한국어 표현을 작성하세요.";
+            }
+
+            item.setQuestion(question);
+            adminTestMapper.createTestItem(item);
+            createdItems.add(item);
+        }
+
+        return Map.of(
+                "testNo" , testNo,
+                "itemsCreated" , createdItems.size(),
+                "items" , createdItems,
+                "mode" , "INFINITE"
+        );
+    }
+
+    // [*] 하드모드 : 모든 예문 중 틀릴 때까지 , 모든 주제의 예문을 난수화하여 제공
+    public Map<String , Object> createHardTest(TestDto testDto) {
+        adminTestMapper.createTest(testDto);
+        int testNo = testDto.getTestNo();
+
+        // 모든 예문 조회
+        List<ExamDto> allExams = adminStudyMapper.getExam();
+        Collections.shuffle(allExams);
+
+        List<TestItemDto> createdItems = new ArrayList<>();
+
+        for (ExamDto exam : allExams) {
+            TestItemDto item = new TestItemDto();
+            item.setTestNo(testNo);
+            item.setExamNo(exam.getExamNo());
+            
+            // 랜덤하게 문제 유형 배정
+            String[] questionTypes = {"그림:" , "음성:" , "주관식:"};
+            int randomType = (int) (Math.random() * 3);
+
+            String question = questionTypes[randomType] + " 올바른 표현을 고르세요.";
+            if (randomType == 2) {
+                question = "주관식: 다음 상황에 맞는 한국어 표현을 작성하세요.";
+            }
+
+            item.setQuestion(question);
+            adminTestMapper.createTestItem(item);
+            createdItems.add(item);
+        }
+        return Map.of(
+                "testNo" , testNo,
+                "itemsCreated" , createdItems.size(),
+                "items" , createdItems,
+                "mode" , "HARD"
+        );
+    }
+
 
     // [ATE-02] 시험 수정 updateTest()
     // 시험 테이블 레코드를 변경한다

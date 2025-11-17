@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TtsRequestDto {
     private String text;           // TTS로 변환할 텍스트
-    private String languageCode;   // 언어 코드 (ko-KR, en-US)
+    private String languageCode;   // Google TTS 언어 코드 (예: ko-KR, ja-JP, zh-CN, en-US, es-ES)
     private int examNo;            // 연결될 예문 번호
-    private int lang;              // 언어 구분 (1:한국어, 2:영어)
+    private int lang;              // 언어 코드 (1=한국어, 2=일본어, 3=중국어, 4=영어, 5=스페인어)
 }

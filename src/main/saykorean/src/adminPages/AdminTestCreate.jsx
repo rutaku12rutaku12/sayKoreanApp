@@ -34,6 +34,9 @@ export default function AdminTestCreate() {
     const [createMode, setCreateMode] = useState("auto");  // "auto" 자동생성 | "custom" 수동생성
     const [customItems, setCustomItems] = useState([]);
 
+    // [*] 시험 모드 state 추가
+    const [testMode, setTestMode] = useState("REGULAR");   // REGULAR, DAILY, INFINITE, HARD
+
     // [*] 로딩
     const [loading, setLoading] = useState(false);
 
@@ -394,33 +397,52 @@ export default function AdminTestCreate() {
         return true;
     }
 
-    // [6] 시험 생성 실행
+    // [6] 시험 생성 실행 - 시험 모드별 분기
     const handleSubmit = async () => {
         if (!validate()) return;
 
         try {
             setLoading(true);
 
-            // 1) 시험 생성
-            const res = await testApi.create({
+            // 모드별로 다른 API 호출
+            let res;
+            const testPayload = {
                 ...testData,
-                studyNo: parseInt(selectedStudyNo)
-            });
-            const testNo = res.data;
-            console.log('시험 생성 완료, testNo:', testNo);
+                studyNo: parseInt(selectedStudyNo),
+                testMode: testMode
+            };
 
-            // 2) 문항 생성
-            for (let item of customItems) {
-                await testItemApi.create({
-                    testNo,
-                    question: item.question,
-                    questionRoman: item.questionRoman,
-                    questionJp: item.questionJp,
-                    questionCn: item.questionCn,
-                    questionEn: item.questionEn,
-                    questionEs: item.questionEs,
-                    examNo: item.examNo
-                });
+            switch (testMode) {
+                case "DAILY":
+                    res = await testApi.createDaily(testPayload);
+                    break;
+                case "INFINITE":
+                    res = await testApi.createInfinite(testPayload);
+                    break;
+                case "HARD":
+                    res = await testApi.createHard(testPayload);
+                    break;
+                case "REGULAR":
+                default:
+                    // 레귤러 케이스는 기존 로직 사용 (커스텀 문항)
+                    res = await testApi.create(testPayload);
+                    const testNo = res.data;
+                    console.log('시험 생성 완료, testNo:', testNo);
+
+                    // 커스텀 문항 생성
+                    for (let item of customItems) {
+                        await testItemApi.create({
+                            testNo,
+                            question: item.question,
+                            questionRoman: item.questionRoman,
+                            questionJp: item.questionJp,
+                            questionCn: item.questionCn,
+                            questionEn: item.questionEn,
+                            questionEs: item.questionEs,
+                            examNo: item.examNo
+                        });
+                    }
+                    break;
             }
 
             alert('시험이 성공적으로 생성되었습니다.');
@@ -439,6 +461,71 @@ export default function AdminTestCreate() {
     return (<>
         <div className="admin-container">
             <h2>시험 등록</h2>
+
+            {/* 시험 모드 선택 */}
+            <div className="admin-section">
+                <h3> 0. 시험 모드 선택 </h3>
+                <div className="admin-mb-md">
+                    <label style={{ marginRight: '20px' }}>
+                        <input
+                            type="radio"
+                            value="REGULAR"
+                            checked={testMode == "REGULAR"}
+                            onChange={(e) => setTestMode(e.target.value)}
+                        />
+                        <span style={{ marginLeft: '5px' }}>
+                            📝 정기시험 (그림/음성/주관식 각 1문제, 커스텀 가능)
+                        </span>
+                    </label>
+                    <br />
+                    <label style={{ marginRight: '20px', marginTop: '10px', display: 'inline-block' }}>
+                        <input
+                            type="radio"
+                            value="DAILY"
+                            checked={testMode == "DAILY"}
+                            onChange={(e) => setTestMode(e.target.value)}
+                        />
+                        <span style={{ marginLeft: '5px' }}>
+                            🌅 일일시험 (매일 다른 문제 3개, 난수화)
+                        </span>
+                    </label>
+                    <br />
+                    <label style={{ marginRight: '20px', marginTop: '10px', display: 'inline-block' }}>
+                        <input
+                            type="radio"
+                            value="INFINITE"
+                            checked={testMode == "INFINITE"}
+                            onChange={(e) => setTestMode(e.target.value)}
+                        />
+                        <span style={{ marginLeft: '5px' }}>
+                            ♾️ 무한모드 (배운 내용 중 틀릴 때까지)
+                        </span>
+                    </label>
+                    <br />
+                    <label style={{ marginTop: '10px', display: 'inline-block' }}>
+                        <input
+                            type="radio"
+                            value="HARD"
+                            checked={testMode === "HARD"}
+                            onChange={(e) => setTestMode(e.target.value)}
+                        />
+                        <span style={{ marginLeft: '5px' }}>
+                            🔥 하드모드 (모든 내용 포함, 틀릴 때까지)
+                        </span>
+                    </label>
+
+                </div>
+                {testMode != "REGULAR" && (
+                    <div className="admin-info-box" style={{ marginTop: '15px' }} >
+                        <p>
+                            💡 선택한 모드는 자동으로 문항이 생성됩니다.
+                            {testMode === "DAILY" && " 매일 다른 3문제가 난수로 출제됩니다."}
+                            {testMode === "INFINITE" && " 배운 주제의 모든 문제가 난수로 출제됩니다."}
+                            {testMode === "HARD" && " 전체 주제의 모든 문제가 난수로 출제됩니다."}
+                        </p>
+                    </div>
+                )}
+            </div>
 
             {/* 1. 장르 선택 */}
             <div className="admin-section">
@@ -567,8 +654,8 @@ export default function AdminTestCreate() {
                 </div>
             )}
 
-            {/* 4. 문항 생성 방식 */}
-            {selectedStudyNo && exams.length > 0 && (
+            {/* 4. 문항 생성 방식 - REGULAR에서만 표시 */}
+            {selectedStudyNo && exams.length > 0 && testMode == "REGULAR" && (
                 <div className="admin-section">
                     <h3>4. 문항 생성 방식</h3>
                     <div className="admin-mb-md">
@@ -767,28 +854,25 @@ export default function AdminTestCreate() {
                 </div>
             )}
 
-            {/* 하단 버튼 */}
-            {customItems.length >= 3 && (
-                <div className="admin-action-buttons">
-                    <button
-                        onClick={() => navigate('/admin/test')}
-                        className="admin-btn admin-btn-lg admin-btn-secondary"
-                    >
-                        취소
-                    </button>
-                    <button
-                        onClick={handleSubmit}
-                        disabled={loading}
-                        className="admin-btn admin-btn-lg admin-btn-success"
-                        style={{
-                            opacity: loading ? 0.6 : 1,
-                            cursor: loading ? 'not-allowed' : 'pointer'
-                        }}
-                    >
-                        {loading ? '처리 중...' : '시험 등록'}
-                    </button>
-                </div>
-            )}
+            {/* 하단 버튼 - 모드에 따라 조건 병경 */}
+            {((testMode == "REGULAR" && customItems.length >= 3) ||
+                (testMode != "REGULAR" && selectedStudyNo)) && (
+                    <div className="admin-action-buttons">
+                        <button
+                            onClick={() => navigate('/admin/test')}
+                            className="admin-btn admin-btn-lg admin-btn-secondary"
+                        >
+                            취소
+                        </button>
+                        <button
+                            onClick={handleSubmit}
+                            disabled={loading}
+                            className="admin-btn admin-btn-lg admin-btn-success"
+                        >
+                            {loading ? '처리 중...' : '시험 등록'}
+                        </button>
+                    </div>
+                )}
         </div >
 
     </>)
