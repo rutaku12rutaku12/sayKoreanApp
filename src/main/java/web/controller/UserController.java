@@ -2,6 +2,7 @@ package web.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -151,12 +152,18 @@ public class UserController {
 
     // [US-07] 이메일 찾기 findEmail()
     @GetMapping("/findemail")
-    public ResponseEntity<String> findEmail(@NotBlank @RequestParam String name, @Pattern(regexp = "(^\\+?[1-9]\\d{7,14}$)", message = "올바른 휴대폰 번호를 입력해주세요.")
+    public ResponseEntity<?> findEmail(@NotBlank @RequestParam String name, @Pattern(regexp = "(^\\+?[1-9]\\d{7,14}$)", message = "올바른 휴대폰 번호를 입력해주세요.")
     @NotBlank @RequestParam String phone){
-        String result = userService.findEmail(name,phone);
-        if( result == null){return ResponseEntity.status(400).body("올바른 값을 입력해주세요.");}
-        System.out.println("찾는 이메일 : "+result);
-        return ResponseEntity.status(200).body(result);
+        try {
+            System.out.println(name);
+            System.out.println(phone);
+            String result = userService.findEmail(name,phone);
+            System.out.println(result);
+            if( result == null){return ResponseEntity.status(400).body("올바른 값을 입력해주세요.");}
+            System.out.println("찾는 이메일 : "+result);
+            return ResponseEntity.status(200).body(result);
+        }catch (Exception e){System.out.println("오류발생: "+e);}
+        return ResponseEntity.status(500).body("이메일 찾기 오류 발생");
     } // func end
 
     // [US-08] 비밀번호 찾기 findPwrd()
@@ -165,7 +172,7 @@ public class UserController {
     @NotBlank @RequestParam String phone, @NotBlank @RequestParam String email){
         String result = userService.findPwrd(name, phone, email);
         if( result == null){return ResponseEntity.status(400).body("올바른 값을 입력해주세요.");}
-        System.out.println("임시비밀번호 발급 : "+result);
+        System.out.println("임시 비밀번호 발급 : "+result);
         return ResponseEntity.status(200).body(result);
     } // func end
 
@@ -257,6 +264,18 @@ public class UserController {
 //        return ResponseEntity.noContent().build(); // 204
 //    }
 
+    @ControllerAdvice
+    public class GlobalExceptionHandler {
+
+        @ExceptionHandler(ConstraintViolationException.class)
+        public ResponseEntity<String> handleValidationException(ConstraintViolationException ex) {
+            ex.getConstraintViolations().forEach(v -> {
+                System.out.println("Invalid value: " + v.getInvalidValue());
+                System.out.println("Message: " + v.getMessage());
+            });
+            return ResponseEntity.badRequest().body("입력 값 검증 실패");
+        }
+    }
 
 
 } // class end
