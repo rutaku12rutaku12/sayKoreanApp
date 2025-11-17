@@ -4,10 +4,11 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import web.model.dto.community.ChatRoomDto;
+import web.model.dto.community.ChattingDto;
 import web.model.dto.community.MessageDto;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface ChattingMapper {
@@ -38,19 +39,36 @@ public interface ChattingMapper {
 
     // 기존 친구 전부 → 채팅방 생성
     @Insert("""
-        INSERT INTO chatList (chatListTitle, chatListState, userNo)
+    INSERT INTO chatList (chatListTitle, chatListState, userNo)
+    SELECT
+        roomTitle,
+        1,
+        roomOwner
+    FROM (
         SELECT
-            CONCAT(LEAST(f.offer, f.receiver), '_', GREATEST(f.offer, f.receiver)),
-            1,
-            LEAST(f.offer, f.receiver)
+            CONCAT(LEAST(f.offer, f.receiver), '_', GREATEST(f.offer, f.receiver)) AS roomTitle,
+            LEAST(f.offer, f.receiver) AS roomOwner
         FROM friend f
         WHERE f.frenStatus = 1
-          AND CONCAT(LEAST(f.offer, f.receiver), '_', GREATEST(f.offer, f.receiver))
-            NOT IN (SELECT chatListTitle FROM chatList)
-        GROUP BY CONCAT(LEAST(f.offer, f.receiver), '_', GREATEST(f.offer, f.receiver))
-    """)
+    ) AS sub
+    WHERE sub.roomTitle NOT IN (SELECT chatListTitle FROM chatList)
+""")
     int createRoomsForExistingFriends();
 
+
+    // 채팅방 삭제
+    @org.apache.ibatis.annotations.Delete("""
+            DELETE FROM chatList WHERE chatListNo = #{roomNo}
+            """)
+    int deleteRoom(int roomNo);
+
+    // 방 번호 조회 (친구 삭제 시)
+    @Select("""
+            SELECT chatListNo FROM chatList 
+            WHERE chatListTitle CONCAT(EAST(#{u1}, #{u2}), '_', GREATEST(#{u1}, #{u2})
+            LIMIT 1
+            """)
+    Integer getRoomNoForDelete(@Param("u1") int u1,@Param("u2") int u2);
 
     // 채팅방 목록
     @Select("""
@@ -79,24 +97,29 @@ public interface ChattingMapper {
         WHERE c.chatListTitle LIKE CONCAT('%', #{userNo}, '%')
         ORDER BY lastTime DESC
     """)
-    List<ChatRoomDto> getMyRooms(int userNo);
+    List<Map<String, Object>> getMyRooms(int userNo);
 
 
     // 메시지 목록
     @Select("""
-        SELECT *
+        SELECT 
+            messageNo,
+            chatMessage,
+            chatListNo,
+            sendNo
         FROM chat
         WHERE chatListNo = #{roomNo}
         ORDER BY messageNo ASC
     """)
-    List<MessageDto> getMessages(int roomNo);
+    List<Map<String, Object>> getMessages(int roomNo);
 
     // 메시지 저장
     @Insert("""
         INSERT INTO chat(chatMessage, chatTime, chatListNo, sendNo)
         VALUES (#{msg}, NOW(), #{roomNo}, #{sendNo})
     """)
-    int insertMessage(@Param("roomNo") int roomNo, @Param("sendNo") int sendNo, @Param("msg") String msg);
+    int insertMessage(@Param("roomNo") int roomNo, @Param("sendNo")
+    int sendNo, @Param("msg") String msg);
 
     void createChatRoom(int u1, int u2);
 }
