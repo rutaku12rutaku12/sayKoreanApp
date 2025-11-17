@@ -1,5 +1,6 @@
 package web.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import web.model.dto.common.RankingDto;
 import web.model.dto.test.TestDto;
 import web.service.TestService;
+import web.util.AuthUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -73,50 +75,64 @@ public class TestController {
     }
 
     // [4] 제출 API
-    @PostMapping("/{testNo}/items/{testItemNo}/answer")
-    public ResponseEntity<?> submitAnswer(
-            @PathVariable int testNo,
-            @PathVariable int testItemNo,
-            @RequestBody SubmitReq body,
-            HttpSession session
-    ) {
-        try {
-            Integer userNo = (Integer) session.getAttribute("userNo");
-            if (userNo == null) {
-                return ResponseEntity.status(401).body("로그인 필요");
+    // 시험 컨트롤러 내부
+
+        private final AuthUtil authUtil;   // AuthUtil 주입
+
+        // [4] 제출 API
+        @PostMapping("/{testNo}/items/{testItemNo}/answer")
+        public ResponseEntity<?> submitAnswer(
+                @PathVariable int testNo,
+                @PathVariable int testItemNo,
+                @RequestBody SubmitReq body,
+                HttpServletRequest request   // 여기로 요청 받기
+        ) {
+            try {
+                // 공통 userNo 추출 (Flutter: JWT / 웹: 세션)
+                Integer userNo = authUtil.getUserNo(request);
+                if (userNo == null) {
+                    return ResponseEntity.status(401).body("로그인 필요");
+                }
+
+                // 필수값 체크
+                if (body.getTestRound() == null) {
+                    return ResponseEntity.badRequest().body("testRound는 필수입니다.");
+                }
+                if (body.getLangNo() == null) {
+                    body.setLangNo(1); // 기본 한국어(1) 같은 디폴트 주고 싶으면
+                }
+
+                // 서비스 호출 (이미 만들어 둔 submitFreeAnswer 사용)
+                int score = testService.submitFreeAnswer(
+                        userNo,
+                        testNo,
+                        testItemNo,
+                        body.getTestRound(),
+                        body.getSelectedExamNo(),
+                        body.getUserAnswer(),
+                        body.getLangNo()
+                );
+
+                // 결과 반환 (React/Flutter 공통으로 사용 가능)
+                return ResponseEntity.ok(
+                        java.util.Map.of(
+                                "score", score,
+                                "isCorrect", (score >= 60 ? 1 : 0)
+                        )
+                );
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.internalServerError()
+                        .body("제출 중 오류: " + e.getMessage());
             }
+        }
 
-            if (body.getTestRound() == null) {
-                return ResponseEntity.badRequest().body("testRound는 필수입니다.");
-            }
-
-            // langHint → langNo 전달
-            int score = testService.submitFreeAnswer(
-                    userNo,
-                    testNo,
-                    testItemNo,
-                    body.getTestRound(),
-                    body.getSelectedExamNo(),
-                    body.getUserAnswer(),
-                    body.getLangNo()
-            );
-
-            return ResponseEntity.ok(Map.of(
-                    "score", score,
-                    "isCorrect", (score >= 60 ? 1 : 0)
-            ));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError()
-                    .body("제출 중 오류: " + e.getMessage());
+        @Data
+        static class SubmitReq {
+            private Integer testRound;
+            private Integer selectedExamNo;
+            private String  userAnswer;
+            private Integer langNo;
+            // userNo는 이제 바디에서 안 읽어도 됨 (AuthUtil이 헤더/세션에서 해결)
         }
     }
-
-    @Data
-    static class SubmitReq {
-        private Integer testRound;
-        private Integer selectedExamNo;
-        private String userAnswer;
-        private Integer langNo; // 변경
-    }
-}
