@@ -50,7 +50,7 @@ public class UserController {
 
             int result = userService.signUp(userDto);
             if (result >= 1) { // userNo 반환
-                System.out.println("userNo 반환 : " + result);
+                System.out.println("가입자 정보 : "+userDto);
                 return ResponseEntity.status(200).body(true);
 
             } else {
@@ -134,7 +134,7 @@ public class UserController {
             return ResponseEntity.status(400).body(-1);
         }
         int result = userService.checkEmail(email);
-            System.out.println("이메일 중복검사 (0중복,1중복아님) : "+result);
+            System.out.println("이메일 중복검사 (1중복,0중복아님) : "+result);
             return ResponseEntity.status(200).body(result);
     } // func end
 
@@ -146,7 +146,7 @@ public class UserController {
             return ResponseEntity.status(400).body(-1);
         }
         int result = userService.checkPhone(phone);
-            System.out.println("연락처 중복검사 (0중복,1중복아님) : "+result);
+            System.out.println("연락처 중복검사 (1중복,0중복아님) : "+result);
             return ResponseEntity.status(200).body(result);
     } // func end
 
