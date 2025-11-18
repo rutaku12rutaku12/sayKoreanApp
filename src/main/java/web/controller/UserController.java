@@ -37,27 +37,27 @@ public class UserController {
 
     // [US-01] 회원가입 signUp()
     @PostMapping("/signup")              // @Valid : dto에 @NotBlank, @Email 등등 어노테이션 활성화 어노테이션
-    public ResponseEntity<Integer> signUp(@Valid @RequestBody UserDto userDto ){
+    public ResponseEntity<Boolean> signUp(@Valid @RequestBody UserDto userDto ){
         try {
-            // reCaptcha 검증
-            RecaptchaConfig.setSecretKey(secretKey);
-            Boolean verify = RecaptchaConfig.verify(userDto.getRecaptcha());
-            System.out.println("회원가입 Recaptcha verify = " + verify);
-            // 검증 실패 시
-            if(!verify){ System.out.println("reCaptcha 검증 실패!");
-                return ResponseEntity.status(400).body(0);
-            }
+//            // reCaptcha 검증
+//            RecaptchaConfig.setSecretKey(secretKey);
+//            Boolean verify = RecaptchaConfig.verify(userDto.getRecaptcha());
+//            System.out.println("회원가입 Recaptcha verify = " + verify);
+//            // 검증 실패 시
+//            if(!verify){ System.out.println("reCaptcha 검증 실패!");
+//                return ResponseEntity.status(400).body(0);
+//            }
 
             int result = userService.signUp(userDto);
             if (result >= 1) { // userNo 반환
                 System.out.println("userNo 반환 : " + result);
-                return ResponseEntity.status(200).body(userDto.getUserNo());
+                return ResponseEntity.status(200).body(true);
 
             } else {
-                return ResponseEntity.status(400).body(0);
+                return ResponseEntity.status(400).body(false);
             }
         }catch (Exception e){ e.printStackTrace();
-            return ResponseEntity.status(500).body(0);
+            return ResponseEntity.status(500).body(false);
         }
     } // func end
 
