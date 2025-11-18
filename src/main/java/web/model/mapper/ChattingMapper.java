@@ -122,4 +122,13 @@ public interface ChattingMapper {
     int sendNo, @Param("msg") String msg);
 
     void createChatRoom(int u1, int u2);
+
+    // 히스토리 조회
+    @Select("""
+            SELECT  messageNo, chatMessage, chatTime, chatListNo, sendNo
+            FROM chat
+            WHERE chatListNo = #{roomNo}
+            ORDER BY chatTime ASC
+            """)
+    List<MessageDto> selectMessages(int roomNo);
 }

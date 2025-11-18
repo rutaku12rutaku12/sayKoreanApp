@@ -49,4 +49,9 @@ public class ChattingService {
     public void saveMessage(int roomNo, int userNo, String msg) {
         chattingMapper.insertMessage(roomNo, userNo, msg);
     }
+
+    // 메시지 히스토리 불러오기
+    public List<MessageDto> getMessages(int roomNo){
+        return chattingMapper.selectMessages(roomNo);
+    }
 }
