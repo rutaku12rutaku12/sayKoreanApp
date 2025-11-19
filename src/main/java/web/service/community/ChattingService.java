@@ -46,12 +46,25 @@ public class ChattingService {
     }
 
     // 메시지 저장
-    public void saveMessage(int roomNo, int userNo, String msg) {
-        chattingMapper.insertMessage(roomNo, userNo, msg);
+    public void saveMessage(MessageDto dto) {
+        chattingMapper.insertMessage(dto);
     }
 
     // 메시지 히스토리 불러오기
     public List<MessageDto> getMessages(int roomNo){
         return chattingMapper.selectMessages(roomNo);
     }
+
+    // 방 삭제
+    public void deleteRoom(int u1, int u2) {
+        Integer roomNo = chattingMapper.getRoomNoForDelete(u1, u2);
+
+        if (roomNo != null) {
+            chattingMapper.deleteRoom(roomNo);
+            System.out.println("🗑 채팅방 삭제됨 : roomNo = " + roomNo);
+        } else {
+            System.out.println("⚠ 삭제할 채팅방 없음");
+        }
+    }
+
 }
