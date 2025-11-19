@@ -70,10 +70,12 @@ public class FriendsService {
     }
 
     // 친구 삭제
-    public boolean deleteFriend(int offer, int receiver) {
-        boolean ok = friendsMapper.updateStatus(offer, receiver, -1) > 0;
+    public boolean deleteFriend(int u1, int u2) {
+        int a = Math.min(u1, u2);
+        int b = Math.max(u1, u2);
+        boolean ok = friendsMapper.updateStatus(u1, u2, -1) > 0;
         if(ok){
-            chattingService.deleteRoom(offer, receiver);
+            chattingService.deleteRoom(a,b);
         }
         return ok;
     }

@@ -147,4 +147,18 @@ ORDER BY lastTime DESC
             ORDER BY chatTime ASC
             """)
     List<MessageDto> selectMessages(int roomNo);
+
+//    @Delete("""
+//    DELETE FROM chat
+//    WHERE chatListNo = #{roomNo}
+//    """)
+//        int deleteMessages(int roomNo);
+//
+//        @Delete("""
+//    DELETE FROM chatList
+//    WHERE chatListNo = #{roomNo}
+//    """)
+//        int deleteRoom(int roomNo);
 }
+
+
