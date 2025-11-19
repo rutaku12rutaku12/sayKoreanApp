@@ -25,7 +25,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private final ChattingService service;
     private final ObjectMapper om = new ObjectMapper();
 
-    private final Map<Integer, List<WebSocketSession>> rooms = new ConcurrentHashMap<>();
+    //방 번호별 세션 목록
+    private final Map<Integer, List<WebSocketSession>> rooms =
+            new ConcurrentHashMap<>();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception{
@@ -53,19 +55,24 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
         System.out.println("🔗 WebSocket 연결됨 (room " + roomNo + ", user " + userNo + ")");
 
-        //히스토리 전송
+        //기존 메시지 1개씩 전송 -> 지우고, 한번에 히스토리 전송
         List<MessageDto> history = service.getMessages(roomNo);
 
-        for (MessageDto m : history){
-            ObjectNode out = om.createObjectNode();
-            out.put("sendNo", m.getSendNo());
-            out.put("message", m.getChatMessage());
-            out.put("time", m.getChatTime());
-            out.put("type", "history");//히스토리 타입 구분
+        ObjectNode historyPayload = om.createObjectNode();
+        historyPayload.put("type", "HISTORY");
+        historyPayload.put("roomNo", roomNo);
+        historyPayload.put("messages", om.valueToTree(history));
+//        for (MessageDto m : history){
+//            ObjectNode out = om.createObjectNode();
+//            out.put("sendNo", m.getSendNo());
+//            out.put("message", m.getChatMessage());
+//            out.put("time", m.getChatTime());
+//            out.put("type", "history");//히스토리 타입 구분
 
-            session.sendMessage(new TextMessage(out.toString()));
-        }
+        session.sendMessage(new TextMessage(historyPayload.toString()));
+
         System.out.println("📨 기존 메시지 " + history.size() + "개 전송 완료");
+
     }
 
 
@@ -83,6 +90,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         // 메시지 파싱
         var root = om.readTree(message.getPayload());
 
+        // 🔥 Flutter/웹 모두 message 필드만 사용하도록 통일 (최소 변경)
         String msg = null;
 
         // Flutter → message
@@ -100,15 +108,23 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         }
 
         // DB 저장
-        service.saveMessage(roomNo, userNo, msg);
+        MessageDto dto = new MessageDto();
+        dto.setChatListNo(roomNo);
+        dto.setSendNo(userNo);
+        dto.setChatMessage(msg);
+        dto.setChatTime(LocalDateTime.now().toString());
+
+        service.saveMessage(dto);// messageNo 자동 세팅됨
+
         System.out.println("💾 저장됨 → roomNo=" + roomNo + ", userNo=" + userNo + ", msg=" + msg);
 
-        // 방송 메시지
+        // 전송 메시지
         ObjectNode out = om.createObjectNode();
+        out.put("type", "CHAT");
+        out.put("messageNo", dto.getMessageNo()); // 추가
         out.put("sendNo", userNo);
         out.put("message", msg);
-        out.put("time", LocalDateTime.now().toString());
-        out.put("type", "message");
+        out.put("time", dto.getChatTime());
 
         TextMessage sendMsg = new TextMessage(out.toString());
 

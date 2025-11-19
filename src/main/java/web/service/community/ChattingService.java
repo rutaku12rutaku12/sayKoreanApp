@@ -46,8 +46,8 @@ public class ChattingService {
     }
 
     // 메시지 저장
-    public void saveMessage(int roomNo, int userNo, String msg) {
-        chattingMapper.insertMessage(roomNo, userNo, msg);
+    public void saveMessage(MessageDto dto) {
+        chattingMapper.insertMessage(dto);
     }
 
     // 메시지 히스토리 불러오기

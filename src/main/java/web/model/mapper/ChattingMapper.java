@@ -1,9 +1,6 @@
 package web.model.mapper;
 
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 import web.model.dto.community.ChattingDto;
 import web.model.dto.community.MessageDto;
 
@@ -135,10 +132,10 @@ ORDER BY lastTime DESC
     // 메시지 저장
     @Insert("""
         INSERT INTO chat(chatMessage, chatTime, chatListNo, sendNo)
-        VALUES (#{msg}, NOW(), #{roomNo}, #{sendNo})
+        VALUES (#{chatMessage}, #{chatTime}, #{chatListNo}, #{sendNo})
     """)
-    int insertMessage(@Param("roomNo") int roomNo, @Param("sendNo")
-    int sendNo, @Param("msg") String msg);
+    @Options(useGeneratedKeys = true, keyProperty = "messageNo")
+    int insertMessage(MessageDto dto);
 
     void createChatRoom(int u1, int u2);
 
