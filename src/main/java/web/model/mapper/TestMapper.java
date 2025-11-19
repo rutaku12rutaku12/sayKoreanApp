@@ -40,11 +40,12 @@ public interface TestMapper { // mapper start
      * @return 언어별 시험 제목이 포함된 TestDto 리스트
      */
 
-    // 1) 공통 ResultMap 정의 (한 번만) //
+    // 1) 공통 ResultMap 정의 (한 번만) //  testMode 포함
     @Select("""
         SELECT
             testNo,
             studyNo,
+            testMode,
             CASE #{langNo}
                 WHEN 1 THEN testTitle
                 WHEN 2 THEN testTitleJp
@@ -59,15 +60,17 @@ public interface TestMapper { // mapper start
     @Results(id = "TestMap", value = {
             @Result(column = "testNo",  property = "testNo",  id = true),
             @Result(column = "studyNo", property = "studyNo"),
+            @Result(column = "testMode", property = "testMode"),
             @Result(column = "testTitleSelected", property = "testTitleSelected")
     })
     List<TestDto> getListTest(@Param("langNo") int langNo);
 
-    // 2) studyNo로 필터링 하는 새 메서드
+    // 2) studyNo로 필터링 하는 새 메서드  testMode 포함
     @Select("""
         SELECT
             testNo,
             studyNo,
+            testMode,
             CASE #{langNo}
                 WHEN 1 THEN testTitle
                 WHEN 2 THEN testTitleJp
@@ -159,6 +162,56 @@ public interface TestMapper { // mapper start
     """)
     List<ExamDto> findRandomExamsExcluding(@Param("excludedExamNo") int excludedExamNo,
                                            @Param("limit") int limit);
+
+    // ✅ [2-3] 무한모드: studyNo별 모든 문항 조회 (사용자가 배운 것에서 나옴)
+    @Select("""
+            select
+                ti.testItemNo,
+                ti.testNo,
+                ti.examNo,
+                case #{langNo}
+                    when 1 then ti.question
+                    when 2 then ti.questionJp
+                    when 3 then ti.questionCn
+                    when 4 then ti.questionEn
+                    when 5 then ti.questionEs
+                    else ti.question
+                end as questionSelected,
+                e.imageName,
+                e.imagePath
+            from testItem ti
+            join exam e on e.examNo = ti.examNo
+            where e.studyNo = #{studyNo}
+            order by rand()
+    """)
+    @ResultMap("TestItemWithMediaMap")
+    List<TestItemWithMediaDto> findItemsByStudyNo (
+            @Param("studyNo") int studyNo,
+            @Param("langNo") int langNo
+    );
+
+    // ✅ [2-4] 하드모드: 전체 문항 조회 (사용자가 안 배운 것에서도 나옴)
+    @Select("""
+            select
+                ti.testItemNo,
+                ti.testNo,
+                ti.examNo,
+                case #{langNo}
+                    when 1 then ti.question
+                    when 2 then ti.questionJp
+                    when 3 then ti.questionCn
+                    when 4 then ti.questionEn
+                    when 5 then ti.questionEs
+                    else ti.question
+                end as questionSelected,
+                e.imageName,
+                e.imagePath
+            from testItem ti
+            join exam e on e.examNo = ti.examNo
+            order by rand()
+    """)
+    @ResultMap("TestItemWithMediaMap")
+    List<TestItemWithMediaDto> findAllItems(@Param("langNo") int langNo);
 
     /*
      * [3] 정답(예문) 조회

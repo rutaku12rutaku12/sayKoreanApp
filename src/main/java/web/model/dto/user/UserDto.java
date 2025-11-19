@@ -24,7 +24,7 @@ public class UserDto {
     @NotBlank
     private String phone; // 연락처: 고유(옵션 필수X)
     private int signupMethod = 1; // 가입방식 코드 기본 1
-    private int userState; // 사용자상태 코드 기본 1 , 탈퇴예정시 -1
+    private int userState; // 사용자상태 코드 기본 1 , 탈퇴예정시 -1 , 제제는 -2
     private String userDate; // 가입일시 기본 now()
     private String userUpdate; // 수정일시 자동 갱신
     private int genreNo; // FK: 장르번호

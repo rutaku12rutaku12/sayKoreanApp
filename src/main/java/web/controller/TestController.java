@@ -45,6 +45,29 @@ public class TestController {
         return ResponseEntity.ok(testService.findTestItemWithOptions(testNo, langNo));
     }
 
+    // ✅ [2-1] [TI-INFI] 무한모드 문항 조회 (완료한 studyNo들의 모든 문항)
+    // GET /saykorean/test/infinite-items?langNo=1&studyNos=1,2,3
+    @GetMapping("/infinite-items")
+    public ResponseEntity<List<Map<String, Object>>> getInfiniteItems(
+            @RequestParam int langNo,
+            @RequestParam List<Integer> studyNos
+    ) {
+        List<Map<String, Object>> items = testService.getItemsByStudyNos(studyNos, langNo);
+        return ResponseEntity.ok(items);
+    }
+
+
+    // ✅ [2-2] [TI-HARD] 하드모드 문항 조회 (전체 DB의 모든 문항)
+    // GET /saykorean/test/hard-items?langNo=1
+    @GetMapping("/hard-items")
+    public ResponseEntity<List<Map<String, Object>>> getHardItems(
+            @RequestParam int langNo
+    ) {
+        List<Map<String, Object>> items = testService.getAllItems(langNo);
+        return ResponseEntity.ok(items);
+    }
+
+
     // [3-1] 최신 회차 점수 조회 (수정)
     @GetMapping("/getscore")
     public ResponseEntity<RankingDto> getScore(

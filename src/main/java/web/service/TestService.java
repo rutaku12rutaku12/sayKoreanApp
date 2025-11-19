@@ -170,6 +170,78 @@ public class TestService {
         return out;
     }
 
+    // ✅ 문항 DTO를 Map으로 변환 (TestItem에서 가져오는 로직 무한모드/하드모드에서 중복 데이터 제거)
+    private List<Map<String, Object>> convertItemsToMaps(List<TestItemWithMediaDto> items , int langNo ){
+        List<Map<String, Object>> out = new ArrayList<>();
+
+        for (int itemIndex = 0; itemIndex < items.size(); itemIndex++) {
+            TestItemWithMediaDto item = items.get(itemIndex);
+            Map<String, Object> m = new HashMap<>();
+            m.put("testItemNo", item.getTestItemNo());
+            m.put("testNo", item.getTestNo());
+            m.put("questionSelected", item.getQuestionSelected());
+            m.put("imageName", item.getImageName());
+            m.put("imagePath", item.getImagePath());
+            m.put("audios", item.getAudios());
+
+            int questionType = itemIndex % 3;
+
+            ExamDto correct = testMapper.findExamByNo(item.getExamNo(), langNo);
+            if (correct != null) {
+                m.put("examSelected", correct.getExamSelected());
+                m.put("examKo", correct.getExamKo());
+
+                if (questionType == 0 || questionType == 1) {
+                    List<Map<String, Object>> options = new ArrayList<>();
+
+                    Map<String, Object> c = new HashMap<>();
+                    c.put("examNo", correct.getExamNo());
+                    c.put("examSelected", correct.getExamSelected());
+                    c.put("examKo", correct.getExamKo());
+                    c.put("isCorrect", true);
+                    options.add(c);
+
+                    List<ExamDto> wrongs = testMapper.findRandomExamsExcludingWithLang(
+                            item.getExamNo(), 2, langNo
+                    );
+
+                    for (ExamDto w : wrongs) {
+                        Map<String, Object> wmap = new HashMap<>();
+                        wmap.put("examNo" , w.getExamKo());
+                        wmap.put("examSelected", w.getExamSelected());
+                        wmap.put("examKo", w.getExamKo());
+                        wmap.put("isCorrect", false);
+                        options.add(wmap);
+                    }
+
+                    Collections.shuffle(options);
+                    m.put("options", options);
+                }
+            }
+            out.add(m);
+        }
+        return out;
+    }
+
+    // ✅ [2-1] 무한모드: 완료한 studyNo들의 모든 문항 반환
+    public List<Map<String, Object>> getItemsByStudyNos(List<Integer> studyNos, int langNo) {
+        List<Map<String, Object>> allItems = new ArrayList<>();
+
+        for (int studyNo : studyNos) {
+            List<TestItemWithMediaDto> items = testMapper.findItemsByStudyNo(studyNo , langNo);
+            allItems.addAll(convertItemsToMaps(items, langNo));
+        }
+
+        return allItems;
+    }
+
+
+    // ✅ [2-2] 하드모드: 전체 DB의 모든 문항 반환
+    public List<Map<String, Object>> getAllItems(int langNo) {
+        List<TestItemWithMediaDto> items = testMapper.findAllItems(langNo);
+        return convertItemsToMaps(items, langNo);
+    }
+
     /*
      * [3] 정답 예문 단건 조회(언어 반영)
      * - 주관식 채점 시 groundTruth로 사용
