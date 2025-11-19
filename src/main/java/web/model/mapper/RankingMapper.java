@@ -87,14 +87,14 @@ public interface RankingMapper {
     @Select("select " +
             " u.nickName , " +
             " u.userNo , " +
-            " max(g.gameScore) as maxScore , " +
-            " count(*) as totalGames " +
+            " max(g.gameScore) as score , " +
+            " count(*) as total , " +
             " sum(case when g.gameResult >= 1 then 1 else 0 end) as successCount " +
             " from gameLog g " +
             " join users u on g.userNo = u.userNo " +
             " where u.userState = 1 " +
             " group by u.userNo , u.nickName " +
-            " order by maxScore desc , successCount desc " +
+            " order by score desc , successCount desc " +
             " limit 10")
     List<Map<String, Object>> getGameRank();
 
@@ -102,13 +102,13 @@ public interface RankingMapper {
     @Select("select " +
             " u.nickName , " +
             " u.userNo , " +
-            " count(*) as attendCount , " +
+            " count(*) as total , " +
             " max(a.attenDate) as lastAttendDate " +
             " from attendance a " +
             " join users u on a.userNo = u.userNo " +
             " where u.userState = 1 " +
             " group by u.userNo , u.nickName " +
-            " order by totalPoint desc , pointLogCount desc " +
+            " order by total desc , lastAttendDate desc " +
             " limit 10")
     List<Map<String, Object>> getAttendanceRank();
 
@@ -116,14 +116,14 @@ public interface RankingMapper {
     @Select("select " +
             " u.nickName , " +
             " u.userNo , " +
-            " sum(pp.updatePoint) as totalPoint , " +
-            " count(*) as pointLogCount " +
+            " sum(pp.updatePoint) as score , " +
+            " count(*) as total " +
             " from pointLog pl " +
             " join pointPolicy pp on pl.pointNo = pp.pointNo " +
             " join users u on pl.userNo = u.userNo " +
             " where u.userState = 1 " +
             " group by u.userNo , u.nickName " +
-            " order by totalPoint desc , pointLogCount desc " +
+            " order by score desc , total desc " +
             " limit 10")
     List<Map<String , Object>> getPointRank();
 

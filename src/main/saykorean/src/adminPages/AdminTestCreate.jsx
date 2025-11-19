@@ -35,7 +35,7 @@ export default function AdminTestCreate() {
     const [customItems, setCustomItems] = useState([]);
 
     // [*] 시험 모드 state 추가
-    const [testMode, setTestMode] = useState("REGULAR");   // REGULAR, DAILY, INFINITE, HARD
+    const [testMode, setTestMode] = useState("REGULAR");   // REGULAR, INFINITE, HARD
 
     // [*] 로딩
     const [loading, setLoading] = useState(false);
@@ -367,6 +367,13 @@ export default function AdminTestCreate() {
             alert('시험 제목을 입력해주세요.');
             return false;
         }
+
+        // ✅ 무한모드/하드모드는 문항 검증 생략
+        if (testMode == "INFINITE" || testMode == "HARD") {
+            return true;
+        }
+
+        // 정규 시험만 문항 검증
         if (customItems.length < 3) {
             alert('시험문항은 최소 3개 이상이어야 합니다.');
             return false;
@@ -413,14 +420,13 @@ export default function AdminTestCreate() {
             };
 
             switch (testMode) {
-                case "DAILY":
-                    res = await testApi.createDaily(testPayload);
-                    break;
                 case "INFINITE":
                     res = await testApi.createInfinite(testPayload);
+                    alert('무한모드 시험이 생성되었습니다. 문항은 클라이언트에서 동적으로 로드됩니다.');
                     break;
                 case "HARD":
                     res = await testApi.createHard(testPayload);
+                    alert('하드모드 시험이 생성되었습니다. 문항은 클라이언트에서 동적으로 로드됩니다.');
                     break;
                 case "REGULAR":
                 default:
@@ -442,10 +448,10 @@ export default function AdminTestCreate() {
                             examNo: item.examNo
                         });
                     }
+                    alert('시험이 성공적으로 생성되었습니다.');
                     break;
             }
 
-            alert('시험이 성공적으로 생성되었습니다.');
             navigate('/admin/test');
 
         } catch (e) {
@@ -481,24 +487,12 @@ export default function AdminTestCreate() {
                     <label style={{ marginRight: '20px', marginTop: '10px', display: 'inline-block' }}>
                         <input
                             type="radio"
-                            value="DAILY"
-                            checked={testMode == "DAILY"}
-                            onChange={(e) => setTestMode(e.target.value)}
-                        />
-                        <span style={{ marginLeft: '5px' }}>
-                            🌅 일일시험 (매일 다른 문제 3개, 난수화)
-                        </span>
-                    </label>
-                    <br />
-                    <label style={{ marginRight: '20px', marginTop: '10px', display: 'inline-block' }}>
-                        <input
-                            type="radio"
                             value="INFINITE"
                             checked={testMode == "INFINITE"}
                             onChange={(e) => setTestMode(e.target.value)}
                         />
                         <span style={{ marginLeft: '5px' }}>
-                            ♾️ 무한모드 (배운 내용 중 틀릴 때까지)
+                            ♾️ 무한모드 (배운 내용 중 틀릴 때까지 , 클라이언트 난수화)
                         </span>
                     </label>
                     <br />
@@ -510,7 +504,7 @@ export default function AdminTestCreate() {
                             onChange={(e) => setTestMode(e.target.value)}
                         />
                         <span style={{ marginLeft: '5px' }}>
-                            🔥 하드모드 (모든 내용 포함, 틀릴 때까지)
+                            🔥 하드모드 (모든 내용 포함, 틀릴 때까지 , 클라이언트 난수화)
                         </span>
                     </label>
 
@@ -518,10 +512,9 @@ export default function AdminTestCreate() {
                 {testMode != "REGULAR" && (
                     <div className="admin-info-box" style={{ marginTop: '15px' }} >
                         <p>
-                            💡 선택한 모드는 자동으로 문항이 생성됩니다.
-                            {testMode === "DAILY" && " 매일 다른 3문제가 난수로 출제됩니다."}
-                            {testMode === "INFINITE" && " 배운 주제의 모든 문제가 난수로 출제됩니다."}
-                            {testMode === "HARD" && " 전체 주제의 모든 문제가 난수로 출제됩니다."}
+                            💡 선택한 모드는 클라이언트에서 문항을 동적으로 로드합니다.
+                            {testMode == "INFINITE" && " 완료한 주제의 모든 문제가 난수로 출제됩니다."}
+                            {testMode == "HARD" && " 전체 주제의 모든 문제가 난수로 출제됩니다."}
                         </p>
                     </div>
                 )}
