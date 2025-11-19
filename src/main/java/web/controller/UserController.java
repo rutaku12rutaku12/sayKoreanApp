@@ -187,7 +187,7 @@ public class UserController {
             return ResponseEntity.status(401).body(null);
         }
         // 로그인된 사용자번호 꺼내기 = 수정하는 사용자의 번호
-        System.out.println("현재 수정할 사용자의 번호 : "+userNo);
+        System.out.println("현재 수정할 사용자의 정보 : "+updateUserInfoDto);
         // dto 담아주기
         updateUserInfoDto.setUserNo(userNo);
         int result = userService.updateUserInfo(updateUserInfoDto);
