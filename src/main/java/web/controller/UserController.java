@@ -50,7 +50,7 @@ public class UserController {
 
             int result = userService.signUp(userDto);
             if (result >= 1) { // userNo 반환
-                System.out.println("userNo 반환 : " + result);
+                System.out.println("가입한 사용자 정보 : " + userDto);
                 return ResponseEntity.status(200).body(true);
 
             } else {
