@@ -15,10 +15,12 @@ public interface ChattingMapper {
 
     // 1:1 채팅방 생성
     @Insert("""
-        INSERT INTO chatList (chatListTitle, chatListState, userNo)
-        VALUES (CONCAT(LEAST(#{u1}, #{u2}), '_', GREATEST(#{u1}, #{u2})), 1, #{u1})
-    """)
-    int createRoom(@Param("u1") int u1, @Param("u2") int u2);
+    INSERT INTO chatList (chatListTitle, chatListState, userNo)
+    VALUES 
+    (CONCAT(LEAST(#{u1}, #{u2}), '_', GREATEST(#{u1}, #{u2})), 1, #{u1}),
+    (CONCAT(LEAST(#{u1}, #{u2}), '_', GREATEST(#{u1}, #{u2})), 1, #{u2})
+""")
+    void createRoom(@Param("u1") int u1, @Param("u2") int u2);
 
     // 존재 여부 체크
     @Select("""
@@ -65,39 +67,56 @@ public interface ChattingMapper {
     // 방 번호 조회 (친구 삭제 시)
     @Select("""
             SELECT chatListNo FROM chatList 
-            WHERE chatListTitle CONCAT(EAST(#{u1}, #{u2}), '_', GREATEST(#{u1}, #{u2})
+            WHERE chatListTitle = CONCAT(LEAST(#{u1}, #{u2}), '_', GREATEST(#{u1}, #{u2}))
             LIMIT 1
             """)
     Integer getRoomNoForDelete(@Param("u1") int u1,@Param("u2") int u2);
 
     // 채팅방 목록
     @Select("""
-        SELECT
-            c.chatListNo AS roomNo,
-            c.chatListTitle,
-            CASE
-                WHEN CAST(SUBSTRING_INDEX(c.chatListTitle, '_', 1) AS SIGNED) = #{userNo}
-                    THEN CAST(SUBSTRING_INDEX(c.chatListTitle, '_', -1) AS SIGNED)
-                ELSE CAST(SUBSTRING_INDEX(c.chatListTitle, '_', 1) AS SIGNED)
-            END AS friendNo,
-            (SELECT nickName FROM users WHERE userNo =
-                CASE
-                    WHEN CAST(SUBSTRING_INDEX(c.chatListTitle, '_', 1) AS SIGNED) = #{userNo}
-                        THEN CAST(SUBSTRING_INDEX(c.chatListTitle, '_', -1) AS SIGNED)
-                    ELSE CAST(SUBSTRING_INDEX(c.chatListTitle, '_', 1) AS SIGNED)
-                END
-            ) AS friendName,
-            (SELECT chatMessage
-             FROM chat WHERE chatListNo = c.chatListNo
-             ORDER BY messageNo DESC LIMIT 1) AS lastMessage,
-            (SELECT DATE_FORMAT(chatTime, '%Y-%m-%d %H:%i')
-             FROM chat WHERE chatListNo = c.chatListNo
-             ORDER BY messageNo DESC LIMIT 1) AS lastTime
-        FROM chatList c
-        WHERE c.chatListTitle LIKE CONCAT('%', #{userNo}, '%')
-        ORDER BY lastTime DESC
-    """)
+WITH room_base AS (
+    SELECT 
+        MAX(c.chatListNo) AS roomNo,
+        c.chatListTitle
+    FROM chatList c
+    WHERE
+        CAST(SUBSTRING_INDEX(c.chatListTitle, '_', 1) AS SIGNED) = #{userNo}
+        OR
+        CAST(SUBSTRING_INDEX(c.chatListTitle, '_', -1) AS SIGNED) = #{userNo}
+    GROUP BY c.chatListTitle
+)
+SELECT
+    rb.roomNo,
+    rb.chatListTitle,
+    CASE
+        WHEN CAST(SUBSTRING_INDEX(rb.chatListTitle, '_', 1) AS SIGNED) = #{userNo}
+            THEN CAST(SUBSTRING_INDEX(rb.chatListTitle, '_', -1) AS SIGNED)
+        ELSE CAST(SUBSTRING_INDEX(rb.chatListTitle, '_', 1) AS SIGNED)
+    END AS friendNo,
+    (SELECT nickName FROM users u WHERE u.userNo =
+        CASE
+            WHEN CAST(SUBSTRING_INDEX(rb.chatListTitle, '_', 1) AS SIGNED) = #{userNo}
+                THEN CAST(SUBSTRING_INDEX(rb.chatListTitle, '_', -1) AS SIGNED)
+            ELSE CAST(SUBSTRING_INDEX(rb.chatListTitle, '_', 1) AS SIGNED)
+        END
+    ) AS friendName,
+    (SELECT chatMessage
+     FROM chat 
+     WHERE chatListNo = rb.roomNo
+     ORDER BY messageNo DESC 
+     LIMIT 1
+    ) AS lastMessage,
+    (SELECT DATE_FORMAT(chatTime, '%Y-%m-%d %H:%i')
+     FROM chat 
+     WHERE chatListNo = rb.roomNo
+     ORDER BY messageNo DESC 
+     LIMIT 1
+    ) AS lastTime
+FROM room_base rb
+ORDER BY lastTime DESC
+""")
     List<Map<String, Object>> getMyRooms(int userNo);
+
 
 
     // 메시지 목록

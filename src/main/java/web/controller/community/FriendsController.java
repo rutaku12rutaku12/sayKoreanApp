@@ -36,7 +36,9 @@ public class FriendsController {
     //친구 삭제
     @DeleteMapping("/delete")
     public ResponseEntity<?> deleteFriend(@RequestParam int offer, @RequestParam int receiver){
-        return ResponseEntity.ok(friendsService.deleteFriend(offer, receiver));
+        boolean ok = friendsService.deleteFriend(offer, receiver);
+        if (ok) return ResponseEntity.ok(true);
+        return ResponseEntity.badRequest().body(false);
     }
 
     //친구 차단
@@ -49,6 +51,12 @@ public class FriendsController {
     @GetMapping("/requests/recv")
     public ResponseEntity<List<FriendsDto>> requestsList(@RequestParam int userNo){
         return ResponseEntity.ok(friendsService.requestsList(userNo));
+    }
+
+    //보낸 요청 목록 조회
+    @GetMapping("/requests/send")
+    public ResponseEntity<List<FriendsDto>> sendList(@RequestParam int userNo){
+        return ResponseEntity.ok(friendsService.sendList(userNo));
     }
 
     //내 친구 목록 조회
