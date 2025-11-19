@@ -71,23 +71,53 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        int roomNo = (int) session.getAttributes().get("roomNo");
-        int userNo = (int) session.getAttributes().get("userNo");
 
-        String msg = om.readTree(message.getPayload()).get("content").asText();
+        Integer roomNo = (Integer) session.getAttributes().get("roomNo");
+        Integer userNo = (Integer) session.getAttributes().get("userNo");
 
-        service.saveMessage(roomNo, userNo, msg);//DB 저장
+        if (roomNo == null || userNo == null) {
+            System.out.println("❌ roomNo/userNo 없음");
+            return;
+        }
 
+        // 메시지 파싱
+        var root = om.readTree(message.getPayload());
+
+        String msg = null;
+
+        // Flutter → message
+        if (root.hasNonNull("message")) {
+            msg = root.get("message").asText();
+        }
+        // 웹(React) → content
+        else if (root.hasNonNull("content")) {
+            msg = root.get("content").asText();
+        }
+
+        if (msg == null || msg.isBlank()) {
+            System.out.println("⚠️ 잘못된 메시지 payload : " + message.getPayload());
+            return;
+        }
+
+        // DB 저장
+        service.saveMessage(roomNo, userNo, msg);
+        System.out.println("💾 저장됨 → roomNo=" + roomNo + ", userNo=" + userNo + ", msg=" + msg);
+
+        // 방송 메시지
         ObjectNode out = om.createObjectNode();
         out.put("sendNo", userNo);
         out.put("message", msg);
         out.put("time", LocalDateTime.now().toString());
-        out.put("type", "message"); // 새 메시지 구분
+        out.put("type", "message");
 
         TextMessage sendMsg = new TextMessage(out.toString());
 
-        for (WebSocketSession ws : rooms.get(roomNo)) {
+        var sessions = rooms.get(roomNo);
+        if (sessions == null) return;
+
+        for (WebSocketSession ws : sessions) {
             if (ws.isOpen()) ws.sendMessage(sendMsg);
         }
     }
+
 }

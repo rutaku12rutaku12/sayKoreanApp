@@ -292,7 +292,6 @@ CREATE TABLE IF NOT EXISTS chatList (
   chatListState INT          NOT NULL DEFAULT 1,
   userNo        INT          NOT NULL,
   PRIMARY KEY (chatListNo),
-  UNIQUE KEY uk_chatListTitle (chatListTitle),
   CONSTRAINT fk_chatlist_user
     FOREIGN KEY (userNo) REFERENCES users(userNo)
     ON UPDATE CASCADE ON DELETE CASCADE

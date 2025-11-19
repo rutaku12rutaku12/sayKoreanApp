@@ -16,24 +16,41 @@ public class FriendsService {
     private final ChattingService chattingService;
 
     // 친구 요청 (추가)
-    public boolean addFriend(int offer, String email) {
+    public Map<String, Object> addFriend(int offer, String email) {
+
+        Map<String, Object> result = new HashMap<>();
 
         Integer receiver = friendsMapper.findUserNoByEmail(email);
-        if (receiver == null) return false; // 존재하지 않음
+        if (receiver == null){ // 존재하지 않음
+            result.put("success", false);
+            result.put("message", "존재하지 않은 사용자입니다.");
+            return result;
+        }
 
-        Integer status = friendsMapper.check(offer, receiver);
+        if (offer == receiver) {// 본인에게 친구 요청 불가
+            result.put("success", false);
+            result.put("message", "본인에게는 친구요청이 불가합니다.");
+            return result;
+        }
+
+        Integer status = friendsMapper.check(offer, receiver); // 기존 관계 상태 조회
 
         if (status == null) {
             friendsMapper.addFriend(offer, receiver);
-            return true;
-        } else if (status == 0) {
-            return false; // 이미 요청 중
-        } else if (status == 1) {
-            return false; // 이미 친구 상태
+            result.put("success", true);
+            result.put("message", "친구 요청을 보냈습니다.");
+
+        } else if (status == 0) {//요청중인 상태
+            result.put("success", false);
+            result.put("message", "이미 요청중입니다.");
+        } else if (status == 1) {//이미 친구
+            result.put("success", false);
+            result.put("message", "이미 친구입니다.");
         } else {
             friendsMapper.updateStatus(offer, receiver, 0);
-            return true;
+            result.put("success", true);
         }
+        return result;
     }
 
     // 친구 수락
@@ -54,7 +71,11 @@ public class FriendsService {
 
     // 친구 삭제
     public boolean deleteFriend(int offer, int receiver) {
-        return friendsMapper.updateStatus(offer, receiver, -1) > 0;
+        boolean ok = friendsMapper.updateStatus(offer, receiver, -1) > 0;
+        if(ok){
+            chattingService.deleteRoom(offer, receiver);
+        }
+        return ok;
     }
 
     // 친구 차단
@@ -62,14 +83,21 @@ public class FriendsService {
         return friendsMapper.updateStatus(offer, receiver, -2) > 0;
     }
 
+    //요청 받은 목록 조회
     public List<FriendsDto> requestsList(int userNo){
         return friendsMapper.findPendingList(userNo);
     }
 
+    //보낸 요청 목록 조회
+    public List<FriendsDto> sendList(int userNo){
+        return friendsMapper.findSendList(userNo);
+    }
+
+    //내 친구 목록 조회
     public List<FriendsDto> friendList(int userNo){
         return friendsMapper.FriendsList(userNo);
     }
 
 }
 
-// 받은 요청
+

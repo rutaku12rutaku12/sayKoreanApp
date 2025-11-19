@@ -57,6 +57,30 @@ public interface FriendsMapper {
     })
     List<FriendsDto> findPendingList(int userNo);
 
+    //보낸 친구 요청 목록
+    @Select("""
+    SELECT
+        f.frenNo,
+        f.frenStatus,
+        f.offer,
+        f.receiver,
+        u.name AS friendName
+    FROM friend f
+    JOIN users u
+        ON u.userNo = f.receiver
+    WHERE
+        f.offer = #{userNo}
+        AND f.frenStatus = 0
+    """)
+    @Results({
+            @Result(column = "frenNo", property = "frenNo"),
+            @Result(column = "frenStatus", property = "frenStatus"),
+            @Result(column = "offer", property = "offer"),
+            @Result(column = "receiver", property = "receiver"),
+            @Result(column = "friendName", property = "friendName")
+    })
+    List<FriendsDto> findSendList(int userNo);
+
     //내 친구 목록 조회
     @Select("""
     SELECT
