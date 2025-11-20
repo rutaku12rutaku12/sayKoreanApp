@@ -51,7 +51,7 @@ public class AdminTestController {
     private final TranslationService translationService;
     private final RomanizerService romanizerService;
 
-    // [ATE-01] 시험 생성 createTest()
+    // ✅ [ATE-01] 정기시험 생성 createTest() (testMode는 자동으로 "REGULAR" 설정)
     // 시험 테이블 레코드를 추가한다
     // 매개변수 TestDto
     // 반환 int (PK)
@@ -62,6 +62,7 @@ public class AdminTestController {
     // BODY : { "testTitle" : "인사 표현 익히기" , "studyNo" : 1 }
     @PostMapping("")
     public ResponseEntity<Integer> createTest(@RequestBody TestDto testDto) {
+        testDto.setTestMode("REGULAR");
         int result = adminTestService.createTest(testDto);
         return ResponseEntity.ok(result);
     }
@@ -72,6 +73,7 @@ public class AdminTestController {
     public ResponseEntity<Map<String, Object>> createTestWithItems(
             @RequestBody TestDto testDto,
             @RequestParam(defaultValue = "true") boolean autoGenerate) {
+        testDto.setTestMode("REGULAR");
         Map<String, Object> result = adminTestService.createTestWithItems(testDto, autoGenerate);
         return ResponseEntity.ok(result);
     }
@@ -108,35 +110,35 @@ public class AdminTestController {
 //        return ResponseEntity.ok(result);
 //    }
 
-    // ✅ [ATE-INFINITE] 무한모드 시험 생성 createInfiniteTest() (빈 시험만 생성 , 문항은 TestController에서 생성)
+    // ❌ [ATE-INFINITE] 무한모드 시험 생성 createInfiniteTest() (빈 시험만 생성 , 문항은 TestController에서 생성)
     // URL : http://localhost:8080/saykorean/admin/test/infinite
     // BODY : { "testTitle": "무한모드", "studyNo": 1 }
-    @PostMapping("/infinite")
-    public ResponseEntity<Map<String, Object>> createInfiniteTest(@RequestBody TestDto testDto) {
-        testDto.setTestMode("INFINITE");
-        // 문항 없이 시험만 생성
-        int testNo = adminTestService.createTest(testDto);
-        return ResponseEntity.ok(Map.of(
-                "testNo" , testNo,
-                "testMode" , "INFINITE" ,
-                "message" , "무한모드 시험이 생성되었습니다. 문항은 클라이언트에서 동적 로드됩니다."
-        ));
-    }
+//    @PostMapping("/infinite")
+//    public ResponseEntity<Map<String, Object>> createInfiniteTest(@RequestBody TestDto testDto) {
+//        testDto.setTestMode("INFINITE");
+//        // 문항 없이 시험만 생성
+//        int testNo = adminTestService.createTest(testDto);
+//        return ResponseEntity.ok(Map.of(
+//                "testNo" , testNo,
+//                "testMode" , "INFINITE" ,
+//                "message" , "무한모드 시험이 생성되었습니다. 문항은 클라이언트에서 동적 로드됩니다."
+//        ));
+//    }
 
-    // ✅ [ATE-HARD] 하드모드 시험 생성 createHardTest() (빈 시험만 생성 , 문항은 TestController에서 생성)
+    // ❌ [ATE-HARD] 하드모드 시험 생성 createHardTest() (빈 시험만 생성 , 문항은 TestController에서 생성)
     // URL : http://localhost:8080/saykorean/admin/test/hard
     // BODY : { "testTitle": "하드모드", "studyNo": 1 }
-    @PostMapping("/hard")
-    public ResponseEntity<Map<String, Object>> createHardTest(@RequestBody TestDto testDto) {
-        testDto.setTestMode("HARD");
-        // 문항 없이 시험만 생성
-        int testNo = adminTestService.createTest(testDto);
-        return ResponseEntity.ok(Map.of(
-                "testNo" , testNo,
-                "testMode" , "HARD" ,
-                "message" , "하드모드 시험이 생성되었습니다. 문항은 클라이언트에서 동적 로드됩니다."
-        ));
-    }
+//    @PostMapping("/hard")
+//    public ResponseEntity<Map<String, Object>> createHardTest(@RequestBody TestDto testDto) {
+//        testDto.setTestMode("HARD");
+//        // 문항 없이 시험만 생성
+//        int testNo = adminTestService.createTest(testDto);
+//        return ResponseEntity.ok(Map.of(
+//                "testNo" , testNo,
+//                "testMode" , "HARD" ,
+//                "message" , "하드모드 시험이 생성되었습니다. 문항은 클라이언트에서 동적 로드됩니다."
+//        ));
+//    }
 
     // [ATE-02] 시험 수정 updateTest()
     // 시험 테이블 레코드를 변경한다
