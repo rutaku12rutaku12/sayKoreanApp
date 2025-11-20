@@ -124,6 +124,15 @@ public class UserService {
         if (!result) {
             return null;
         }
+
+        // 로그인 성공 시 포인트 적립
+        //  - point_record 테이블에 한 줄 INSERT
+        PointRecordDto record = new PointRecordDto();
+        record.setPointNo(login_pointNo);        // 로그인 policy 번호
+        record.setUserNo(user.getUserNo());       // 현재 로그인한 회원 번호
+        pointMapper.insertPointRecord(record);
+
+
         user.setPassword(null); // 비밀번호 비공개
 
         // 2 로그인 방식 나누기
