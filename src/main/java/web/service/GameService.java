@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import web.model.dto.game.GameDto;
 import web.model.dto.game.GameLogDto;
+import web.model.dto.point.PointRecordDto;
 import web.model.entity.game.GameEntity;
 import web.model.entity.game.GameLogEntity;
 import web.model.mapper.PointMapper;
@@ -25,32 +26,46 @@ public class GameService {
     private final GameRepository gameRepository;
     private final GameLogRepository gameLogRepository;
     private final UserMapper userMapper;
+    private final PointMapper pointMapper;
 
-    // [GL-01]	게임기록생성	createGameLog()	사용자가 게임을 종료하면 해당 기록을 테이블에 저장한다.
-    // * 게임 결과에 따라 해당 사용자의 포인트가 증가한다.
-    // * 게임 점수에 따라 랭킹 테이블에 반영될 수 있다.
-    // * 게임 테이블 FK로 받는다
-    public GameLogDto createGameLog(GameLogDto gameLogDto) { // 1. 저장할 dto 매개변수 넣기
-        // 2. dto -> entity로 변환
+    private final int game_pointNo = 5;
+
+    // [GL-01] 게임기록생성 createGameLog()
+//  - 사용자가 게임을 종료하면 해당 기록을 테이블에 저장한다.
+//  - 게임 결과에 따라 해당 사용자의 포인트가 증가한다.
+//  - 게임 점수에 따라 랭킹 테이블에 반영될 수 있다.
+//  - Game 테이블을 FK로 참조한다.
+    public GameLogDto createGameLog(GameLogDto gameLogDto) {
+        // 1. dto -> entity 변환
         GameLogEntity gameLogEntity = gameLogDto.toEntity();
-        // 3. .save() 이용한 엔티티 영속화
-        GameLogEntity saveEntity = gameLogRepository.save(gameLogEntity);
-        // 4-1. 성공) PK 생성 시, 생성된 엔티티 -> dto 변환 및 반환
-        if (saveEntity.getGameLogNo() >= 0) {
-            return saveEntity.toDto();
-        }
-        // 4-2. 실패) PK 없으면 dto 반환
-        return gameLogDto;
-    }
 
-    // [GL-02]	내 게임기록 전체조회	getMyGameLog()	사용자(본인)의 게임기록 전체를 조회한다
-    public List<GameLogDto> getMyGameLog(int userNo) {
-        // 1. 모든 엔티티 조회 및 스트림으로 엔티티 -> dto 변환
-        List<GameLogDto> gameLogDtoList = gameLogRepository.findByUserNo(userNo)
-                .stream().map(GameLogEntity::toDto)
-                .collect(Collectors.toList());
-        // 2. dto 배열 반환
-        return gameLogDtoList;
+        // 2. JPA save() 로 영속화
+        GameLogEntity saveEntity = gameLogRepository.save(gameLogEntity);
+
+        // 3. 저장 성공 여부 확인 (PK가 정상 발급되었는지)
+        if ( saveEntity.getGameLogNo() <= 0 ) {
+            // 실패 시, 원본 dto 그대로 반환
+            return gameLogDto;
+        }
+
+        // ─────────────────────────────────────────────
+        // 4. 게임 결과에 따라 포인트 적립
+        //  - 예) gameResult = 1 이면 성공, 0 이면 실패라고 가정
+        //  - 또는 "SUCCESS"/"FAIL" 같은 문자열이면 그에 맞게 비교
+        // ─────────────────────────────────────────────
+        boolean isSuccess = saveEntity.getGameResult() == 1;
+        // 문자열이면 예: "SUCCESS".equalsIgnoreCase(saveEntity.getGameResult())
+
+        if (isSuccess) {
+            PointRecordDto record = new PointRecordDto();
+            record.setPointNo(game_pointNo);   // "게임 성공" 포인트 정책 번호
+            record.setUserNo(saveEntity.getUserNo());   // 게임 로그에 이미 userNo 있지?
+
+            pointMapper.insertPointRecord(record);
+        }
+
+        // 5. 최종적으로 저장된 엔티티를 DTO로 변환해서 반환
+        return saveEntity.toDto();
     }
 
     // [GL-03]	내 게임기록 상세조회	getMyGameLogDetail()	사용자(본인)의 게임기록을 상세 조회한다

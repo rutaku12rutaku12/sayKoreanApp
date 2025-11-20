@@ -10,10 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PointDto {
-    /*
-     * 포인트 정책 마스터
-     *  - 예) 회원가입포인트 300, 출석포인트 10, 시험완수 100 ...
-     */
+
 
     private int pointNo;      // PK: 포인트번호
     private String pointName; // 포인트명 (예: 회원가입포인트, 출석포인트 등)
