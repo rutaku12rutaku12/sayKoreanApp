@@ -32,23 +32,6 @@ public class GameService {
 
     private final int game_pointNo = 5;
 
-    // [GL-01] 게임기록생성 createGameLog()
-//  - 사용자가 게임을 종료하면 해당 기록을 테이블에 저장한다.
-//  - 게임 결과에 따라 해당 사용자의 포인트가 증가한다.
-//  - 게임 점수에 따라 랭킹 테이블에 반영될 수 있다.
-//  - Game 테이블을 FK로 참조한다.
-    public GameLogDto createGameLog(GameLogDto gameLogDto) {
-        // 1. dto -> entity 변환
-        GameLogEntity gameLogEntity = gameLogDto.toEntity();
-
-        // 2. JPA save() 로 영속화
-        GameLogEntity saveEntity = gameLogRepository.save(gameLogEntity);
-
-        // 3. 저장 성공 여부 확인 (PK가 정상 발급되었는지)
-        if ( saveEntity.getGameLogNo() <= 0 ) {
-            // 실패 시, 원본 dto 그대로 반환
-            return gameLogDto;
-        }
     // [GL-01]	게임기록생성	createGameLog()	사용자가 게임을 종료하면 해당 기록을 테이블에 저장한다.
     // * 게임 결과에 따라 해당 사용자의 포인트가 증가한다.
     // * 게임 점수에 따라 랭킹 테이블에 반영될 수 있다.
@@ -57,8 +40,11 @@ public class GameService {
     public GameLogDto createGameLog(GameLogDto gameLogDto) { // 1. 저장할 dto 매개변수 넣기
         try {
 
-            log.info("\uD83C\uDFAE 게임 기록 저장 시작 - gameNo: {} , userNo: {} , score: {}" ,
-                    gameLogDto.getGameNo(), gameLogDto.getUserNo(), gameLogDto.getGameScore());
+            log.info("🎮 게임 기록 저장 시작 - gameNo: {}, userNo: {}, score: {}, result: {}",
+                    gameLogDto.getGameNo(),
+                    gameLogDto.getUserNo(),
+                    gameLogDto.getGameScore(),
+                    gameLogDto.getGameResult());
 
             // 1. 게임 엔티티 존재 확인 (DB 조회)
             GameEntity gameEntity = gameRepository.findById(gameLogDto.getGameNo())
@@ -67,7 +53,7 @@ public class GameService {
                        return new RuntimeException("존재하지 않는 게임입니다. gameNo: " + gameLogDto.getGameNo());
                     });
 
-            log.info("✅ 게임 엔티티 조회 성공 - gameTitle: {}", gameEntity.getGameTitle());
+            log.info("✅ 게임 엔티티 조회 성공 - gameTitle: {}", gameEntity.getGameTitle());;
 
             // 2. dto -> entity로 변환
             GameLogEntity gameLogEntity = gameLogDto.toEntity();
@@ -76,7 +62,38 @@ public class GameService {
             GameLogEntity savedEntity = gameLogRepository.save(gameLogEntity);
             log.info("✅ 게임 기록 저장 완료 - gameLogNo: {}", savedEntity.getGameLogNo());
 
-            // 4 dto 변환 및 반환
+            // ─────────────────────────────────────────────
+            // 4. 게임 결과에 따라 포인트 적립
+            //  - 예) gameResult = 1 이면 성공, 0 이면 실패라고 가정
+            //  - 또는 "SUCCESS"/"FAIL" 같은 문자열이면 그에 맞게 비교
+            // ─────────────────────────────────────────────
+            try {
+                if (savedEntity.getGameResult() >= 1) {
+                    log.info("🎁 포인트 적립 시작 - userNo: {}, gameResult: {}",
+                            savedEntity.getUserNo(),
+                            savedEntity.getGameResult());
+
+                    PointRecordDto pointRecord = new PointRecordDto();
+                    pointRecord.setPointNo(game_pointNo);
+                    pointRecord.setUserNo(savedEntity.getUserNo());
+
+                    // 포인트 적립 실행
+                    int insertResult = pointMapper.insertPointRecord(pointRecord);
+
+                    if (insertResult > 0) {
+                        log.info("✅ 포인트 적립 완료 - userNo: {}, pointNo: {}",
+                                savedEntity.getUserNo(),
+                                game_pointNo);
+                    } else {
+                        log.warn("⚠️ 포인트 적립 실패 - insertResult: {}", insertResult);
+                    }
+                }
+            } catch (Exception pointError) {
+                // 포인트 적립 실패해도 게임 기록은 유지
+                log.error("⚠️ 포인트 적립 중 오류 발생 (게임 기록은 저장됨)", pointError);
+            }
+
+            // 5. 저장된 엔티티를 DTO로 변환하여 반환
             return savedEntity.toDto();
 
         } catch (Exception e) {
@@ -85,26 +102,6 @@ public class GameService {
         }
 
 
-    }
-
-        // ─────────────────────────────────────────────
-        // 4. 게임 결과에 따라 포인트 적립
-        //  - 예) gameResult = 1 이면 성공, 0 이면 실패라고 가정
-        //  - 또는 "SUCCESS"/"FAIL" 같은 문자열이면 그에 맞게 비교
-        // ─────────────────────────────────────────────
-        boolean isSuccess = saveEntity.getGameResult() == 1;
-        // 문자열이면 예: "SUCCESS".equalsIgnoreCase(saveEntity.getGameResult())
-
-        if (isSuccess) {
-            PointRecordDto record = new PointRecordDto();
-            record.setPointNo(game_pointNo);   // "게임 성공" 포인트 정책 번호
-            record.setUserNo(saveEntity.getUserNo());   // 게임 로그에 이미 userNo 있지?
-
-            pointMapper.insertPointRecord(record);
-        }
-
-        // 5. 최종적으로 저장된 엔티티를 DTO로 변환해서 반환
-        return saveEntity.toDto();
     }
 
     // [GL-02] 내 게임기록 전체 조회
