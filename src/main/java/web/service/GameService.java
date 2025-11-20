@@ -11,10 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import web.model.dto.game.GameDto;
 import web.model.dto.game.GameLogDto;
-import web.model.dto.point.PointRecordDto;
 import web.model.entity.game.GameEntity;
 import web.model.entity.game.GameLogEntity;
-import web.model.mapper.PointMapper;
 import web.model.mapper.UserMapper;
 import web.repository.GameLogRepository;
 import web.repository.GameRepository;
@@ -28,9 +26,6 @@ public class GameService {
     private final GameRepository gameRepository;
     private final GameLogRepository gameLogRepository;
     private final UserMapper userMapper;
-    private final PointMapper pointMapper;
-
-    private final int game_pointNo = 5;
 
     // [GL-01]	게임기록생성	createGameLog()	사용자가 게임을 종료하면 해당 기록을 테이블에 저장한다.
     // * 게임 결과에 따라 해당 사용자의 포인트가 증가한다.
@@ -40,20 +35,17 @@ public class GameService {
     public GameLogDto createGameLog(GameLogDto gameLogDto) { // 1. 저장할 dto 매개변수 넣기
         try {
 
-            log.info("🎮 게임 기록 저장 시작 - gameNo: {}, userNo: {}, score: {}, result: {}",
-                    gameLogDto.getGameNo(),
-                    gameLogDto.getUserNo(),
-                    gameLogDto.getGameScore(),
-                    gameLogDto.getGameResult());
+            log.info("\uD83C\uDFAE 게임 기록 저장 시작 - gameNo: {} , userNo: {} , score: {}" ,
+                    gameLogDto.getGameNo(), gameLogDto.getUserNo(), gameLogDto.getGameScore());
 
             // 1. 게임 엔티티 존재 확인 (DB 조회)
             GameEntity gameEntity = gameRepository.findById(gameLogDto.getGameNo())
                     .orElseThrow(() -> {
-                       log.error("❌ 존재하지 않는 게임 - gameNo: {}\", gameLogDto.getGameNo());");
-                       return new RuntimeException("존재하지 않는 게임입니다. gameNo: " + gameLogDto.getGameNo());
+                        log.error("❌ 존재하지 않는 게임 - gameNo: {}\", gameLogDto.getGameNo());");
+                        return new RuntimeException("존재하지 않는 게임입니다. gameNo: " + gameLogDto.getGameNo());
                     });
 
-            log.info("✅ 게임 엔티티 조회 성공 - gameTitle: {}", gameEntity.getGameTitle());;
+            log.info("✅ 게임 엔티티 조회 성공 - gameTitle: {}", gameEntity.getGameTitle());
 
             // 2. dto -> entity로 변환
             GameLogEntity gameLogEntity = gameLogDto.toEntity();
@@ -62,38 +54,7 @@ public class GameService {
             GameLogEntity savedEntity = gameLogRepository.save(gameLogEntity);
             log.info("✅ 게임 기록 저장 완료 - gameLogNo: {}", savedEntity.getGameLogNo());
 
-            // ─────────────────────────────────────────────
-            // 4. 게임 결과에 따라 포인트 적립
-            //  - 예) gameResult = 1 이면 성공, 0 이면 실패라고 가정
-            //  - 또는 "SUCCESS"/"FAIL" 같은 문자열이면 그에 맞게 비교
-            // ─────────────────────────────────────────────
-            try {
-                if (savedEntity.getGameResult() >= 1) {
-                    log.info("🎁 포인트 적립 시작 - userNo: {}, gameResult: {}",
-                            savedEntity.getUserNo(),
-                            savedEntity.getGameResult());
-
-                    PointRecordDto pointRecord = new PointRecordDto();
-                    pointRecord.setPointNo(game_pointNo);
-                    pointRecord.setUserNo(savedEntity.getUserNo());
-
-                    // 포인트 적립 실행
-                    int insertResult = pointMapper.insertPointRecord(pointRecord);
-
-                    if (insertResult > 0) {
-                        log.info("✅ 포인트 적립 완료 - userNo: {}, pointNo: {}",
-                                savedEntity.getUserNo(),
-                                game_pointNo);
-                    } else {
-                        log.warn("⚠️ 포인트 적립 실패 - insertResult: {}", insertResult);
-                    }
-                }
-            } catch (Exception pointError) {
-                // 포인트 적립 실패해도 게임 기록은 유지
-                log.error("⚠️ 포인트 적립 중 오류 발생 (게임 기록은 저장됨)", pointError);
-            }
-
-            // 5. 저장된 엔티티를 DTO로 변환하여 반환
+            // 4 dto 변환 및 반환
             return savedEntity.toDto();
 
         } catch (Exception e) {
@@ -104,12 +65,14 @@ public class GameService {
 
     }
 
-    // [GL-02] 내 게임기록 전체 조회
-    public List<GameLogDto> getMyGameLog(Integer userNo) {
-        List<GameLogEntity> list = gameLogRepository.findByUserNo(userNo);
-        return list.stream()
-                .map(GameLogEntity::toDto)
+    // [GL-02]	내 게임기록 전체조회	getMyGameLog()	사용자(본인)의 게임기록 전체를 조회한다
+    public List<GameLogDto> getMyGameLog(int userNo) {
+        // 1. 모든 엔티티 조회 및 스트림으로 엔티티 -> dto 변환
+        List<GameLogDto> gameLogDtoList = gameLogRepository.findByUserNo(userNo)
+                .stream().map(GameLogEntity::toDto)
                 .collect(Collectors.toList());
+        // 2. dto 배열 반환
+        return gameLogDtoList;
     }
 
     // [GL-03]	내 게임기록 상세조회	getMyGameLogDetail()	사용자(본인)의 게임기록을 상세 조회한다
