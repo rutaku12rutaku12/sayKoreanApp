@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import web.model.dto.game.GameDto;
 import web.model.dto.game.GameLogDto;
 import web.model.entity.game.GameEntity;
@@ -16,6 +17,7 @@ import web.model.mapper.UserMapper;
 import web.repository.GameLogRepository;
 import web.repository.GameRepository;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -29,17 +31,38 @@ public class GameService {
     // * 게임 결과에 따라 해당 사용자의 포인트가 증가한다.
     // * 게임 점수에 따라 랭킹 테이블에 반영될 수 있다.
     // * 게임 테이블 FK로 받는다
+    // 251120 - detached entity 문제 해결
     public GameLogDto createGameLog(GameLogDto gameLogDto) { // 1. 저장할 dto 매개변수 넣기
-        // 2. dto -> entity로 변환
-        GameLogEntity gameLogEntity = gameLogDto.toEntity();
-        // 3. .save() 이용한 엔티티 영속화
-        GameLogEntity saveEntity = gameLogRepository.save(gameLogEntity);
-        // 4-1. 성공) PK 생성 시, 생성된 엔티티 -> dto 변환 및 반환
-        if (saveEntity.getGameLogNo() >= 0) {
-            return saveEntity.toDto();
+        try {
+
+            log.info("\uD83C\uDFAE 게임 기록 저장 시작 - gameNo: {} , userNo: {} , score: {}" ,
+                    gameLogDto.getGameNo(), gameLogDto.getUserNo(), gameLogDto.getGameScore());
+
+            // 1. 게임 엔티티 존재 확인 (DB 조회)
+            GameEntity gameEntity = gameRepository.findById(gameLogDto.getGameNo())
+                    .orElseThrow(() -> {
+                       log.error("❌ 존재하지 않는 게임 - gameNo: {}\", gameLogDto.getGameNo());");
+                       return new RuntimeException("존재하지 않는 게임입니다. gameNo: " + gameLogDto.getGameNo());
+                    });
+
+            log.info("✅ 게임 엔티티 조회 성공 - gameTitle: {}", gameEntity.getGameTitle());
+
+            // 2. dto -> entity로 변환
+            GameLogEntity gameLogEntity = gameLogDto.toEntity();
+
+            // 3. .save() 이용한 엔티티 영속화
+            GameLogEntity savedEntity = gameLogRepository.save(gameLogEntity);
+            log.info("✅ 게임 기록 저장 완료 - gameLogNo: {}", savedEntity.getGameLogNo());
+
+            // 4 dto 변환 및 반환
+            return savedEntity.toDto();
+
+        } catch (Exception e) {
+            log.error("❌ 게임 기록 저장 실패" , e);
+            throw new RuntimeException("게임 기록 저장 중 오류가 발생했습니다: " + e.getMessage(), e);
         }
-        // 4-2. 실패) PK 없으면 dto 반환
-        return gameLogDto;
+
+
     }
 
     // [GL-02]	내 게임기록 전체조회	getMyGameLog()	사용자(본인)의 게임기록 전체를 조회한다

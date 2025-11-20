@@ -483,30 +483,7 @@ export default function AdminTestCreate() {
                             📝 정기시험 (그림/음성/주관식 각 1문제, 커스텀 가능)
                         </span>
                     </label>
-                    <br />
-                    <label style={{ marginRight: '20px', marginTop: '10px', display: 'inline-block' }}>
-                        <input
-                            type="radio"
-                            value="INFINITE"
-                            checked={testMode == "INFINITE"}
-                            onChange={(e) => setTestMode(e.target.value)}
-                        />
-                        <span style={{ marginLeft: '5px' }}>
-                            ♾️ 무한모드 (배운 내용 중 틀릴 때까지 , 클라이언트 난수화)
-                        </span>
-                    </label>
-                    <br />
-                    <label style={{ marginTop: '10px', display: 'inline-block' }}>
-                        <input
-                            type="radio"
-                            value="HARD"
-                            checked={testMode === "HARD"}
-                            onChange={(e) => setTestMode(e.target.value)}
-                        />
-                        <span style={{ marginLeft: '5px' }}>
-                            🔥 하드모드 (모든 내용 포함, 틀릴 때까지 , 클라이언트 난수화)
-                        </span>
-                    </label>
+                    
 
                 </div>
                 {testMode != "REGULAR" && (

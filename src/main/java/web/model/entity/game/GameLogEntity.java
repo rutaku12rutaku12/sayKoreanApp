@@ -28,7 +28,7 @@ public class GameLogEntity {
 
     // 2. 단방향연결
     // 하위 엔티티가 상위 엔티티참조 관계
-    @ManyToOne( cascade = CascadeType.ALL, fetch = FetchType.EAGER )   // 캐스케이드 빼서 삭제 전파 방지
+    @ManyToOne( fetch = FetchType.EAGER )   // 캐스케이드 빼서 삭제 전파 방지
     @JoinColumn( name = "gameNo" ) // FK 필드명 (PK 필드명과 동일하게)
     private GameEntity gameEntity;
 
@@ -40,7 +40,7 @@ public class GameLogEntity {
                 .gameScore( this.gameScore )
                 .gameFinishedAt( this.gameFinishedAt )
                 .userNo( this.userNo )
-                .gameNo( this.gameEntity.getGameNo() )
+                .gameNo( this.gameEntity != null ? this.gameEntity.getGameNo() : 0 )
                 .build();
     }
 }
