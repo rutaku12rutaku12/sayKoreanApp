@@ -3,10 +3,12 @@ package web.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import web.model.dto.point.PointRecordDto;
 import web.model.dto.study.ExamDto;
 import web.model.dto.study.GenreDto;
 import web.model.dto.common.LanguageDto;
 import web.model.dto.study.StudyDto;
+import web.model.mapper.PointMapper;
 import web.model.mapper.StudyMapper;
 
 import java.util.List;
@@ -37,6 +39,11 @@ public class StudyService { // class start
 
     // Mapper 의존성 주입 (생성자 주입)
     private final StudyMapper studyMapper;
+    private final PointMapper pointMapper;
+
+    // 교육 포인트 policy 번호
+    private final int login_pointNo = 3;
+
 
     /*
      * [1] 장르 목록
@@ -123,6 +130,24 @@ public class StudyService { // class start
     public ExamDto getPrevExam( int studyNo , int currentExamNo , int langNo ){
         ExamDto result = studyMapper.getPrevExam( studyNo , currentExamNo , langNo );
         return result;
+    }
+
+
+    // "오늘치 교육완수" 포인트 정책 번호 (point 테이블 PK에 맞춰서)
+    private static final int STUDY_COMPLETE_POINT_NO = 3;
+
+    /*
+     * [6] 오늘치 교육완수 포인트 지급
+     * - 프론트에서 "학습 완료" 버튼 눌렀을 때 서버에 호출
+     * - 지금은 단순히 pointLog 에만 기록 남김
+     */
+    public void giveStudyCompletePoint(int userNo) {
+
+        PointRecordDto record = new PointRecordDto();
+        record.setUserNo(userNo);
+        record.setPointNo(STUDY_COMPLETE_POINT_NO);
+
+        pointMapper.insertPointRecord(record);
     }
 
 } // class end

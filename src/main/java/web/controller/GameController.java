@@ -43,13 +43,13 @@ public class GameController {
     // [*] DI
     private final GameService gameService;
     private final AuthUtil authUtil;
-    
+
     // 테스트 모드 플래그 ( JWT 이식 전에 테스트용. 실제 배포 시에는 false로 변경!)
     private static final boolean TEST_MODE = false;
     private static final int TEST_USER_NO = 1;  // 테스트용 기본 사용자 번호
 
     // 플러터에서는 세션 안 먹힘! [GL-NN] 사용자 게임 관련 메소드는 JWT 토큰으로 처리할 것.
-    // [GL-01]	게임기록생성	createGameLog()	사용자가 게임을 종료하면 해당 기록을 테이블에 저장한다.
+    // [GL-01]   게임기록생성   createGameLog()   사용자가 게임을 종료하면 해당 기록을 테이블에 저장한다.
     // * 게임 결과에 따라 해당 사용자의 포인트가 증가한다.
     // * 게임 점수에 따라 랭킹 테이블에 반영될 수 있다.
     // * 게임 테이블 FK로 받는다
@@ -74,7 +74,7 @@ public class GameController {
         // [실제 운영 모드] AuthUtil 통한 통합 인증
         else {
             userNo = authUtil.getUserNo(request);
-            
+
             if (userNo == null) {
                 String clientType = request.getHeader("X-Client-Type");
                 if("flutter".equalsIgnoreCase(clientType)) {
@@ -103,7 +103,7 @@ public class GameController {
         }
     }
 
-    // [GL-02]	내 게임기록 전체조회	getMyGameLog()	사용자(본인)의 게임기록 전체를 조회한다
+    // [GL-02]   내 게임기록 전체조회   getMyGameLog()   사용자(본인)의 게임기록 전체를 조회한다
     // URL : http://localhost:8080/saykorean/gamelog
     // 로그인 상태에서만 가능!
     // HEADERS :
@@ -135,7 +135,7 @@ public class GameController {
         return ResponseEntity.ok(gameService.getMyGameLog(userNo));
     }
 
-    // [GL-03]	내 게임기록 상세조회	getMyGameLogDetail()	사용자(본인)의 게임기록을 상세 조회한다
+    // [GL-03]   내 게임기록 상세조회   getMyGameLogDetail()   사용자(본인)의 게임기록을 상세 조회한다
     // URL : http://localhost:8080/saykorean/gamelog/detail?gameLogNo=1
     // HEADERS :
     //     *   - X-Client-Type: flutter (Flutter 앱인 경우)
@@ -159,8 +159,8 @@ public class GameController {
             userNo = authUtil.getUserNo(request);
 
             if (userNo == null) {
-               return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                       .body("로그인이 필요합니다.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("로그인이 필요합니다.");
             }
         }
 
@@ -175,7 +175,7 @@ public class GameController {
         return ResponseEntity.ok(gameService.getGame());
     }
 
-    // [AGL-01]	게임기록 삭제(관리자단)	deleteGameLog()	게임 기록 테이블을 삭제한다.
+    // [AGL-01]   게임기록 삭제(관리자단)   deleteGameLog()   게임 기록 테이블을 삭제한다.
     // * 관리자가 부정한 게임 기록을 임의로 삭제한다.
     // * 사용자가 탈퇴했을 경우, 게임 기록을 삭제한다.
     // URL : http://localhost:8080/saykorean/admin/gamelog?gameLogNo=1&userNo=
@@ -187,7 +187,7 @@ public class GameController {
         return  ResponseEntity.ok(gameService.deleteGameLog(gameLogNo, userNo));
     }
 
-    // [AGL-02]	게임전체기록 조회 (관리자단)	getGameLog()	게임기록 전체를 조회한다.
+    // [AGL-02]   게임전체기록 조회 (관리자단)   getGameLog()   게임기록 전체를 조회한다.
     // URL : http://localhost:8080/saykorean/admin/gamelog
     @GetMapping("/admin/gamelog")
     public ResponseEntity<?> getGameLog() {
@@ -195,7 +195,7 @@ public class GameController {
         return ResponseEntity.ok(gameService.getGameLog());
     }
 
-    // [AGL-03]	게임상세기록 조회 (관리자단)	getGameLogDetail()	게임 기록을 상세 조회한다.
+    // [AGL-03]   게임상세기록 조회 (관리자단)   getGameLogDetail()   게임 기록을 상세 조회한다.
     // URL : http://localhost:8080/saykorean/admin/gamelog/detail?gameLogNo=1
     @GetMapping("/admin/gamelog/detail")
     public ResponseEntity<?> getGameLogDetail(@RequestParam Integer gameLogNo) {
@@ -203,7 +203,7 @@ public class GameController {
         return ResponseEntity.ok(gameService.getGameLogDetail(gameLogNo));
     }
 
-    // [AG-01]	게임 종류 추가(관리자단)	createGame()	게임 테이블을 추가한다.
+    // [AG-01]   게임 종류 추가(관리자단)   createGame()   게임 테이블을 추가한다.
     // * 실제 게임은 플러터 assets 폴더에 추가해야합니다.
     // URL : http://localhost:8080/saykorean/admin/game
     // BODY : { "gameTitle" : "날쌘돌이토돌이" }
@@ -213,7 +213,7 @@ public class GameController {
         return ResponseEntity.ok(gameService.createGame(gameDto));
     }
 
-    // [AG-02]	게임 전체조회(관리자단)	getGame()	게임 테이블을 전체조회한다.
+    // [AG-02]   게임 전체조회(관리자단)   getGame()   게임 테이블을 전체조회한다.
     // URL : http://localhost:8080/saykorean/admin/game
     @GetMapping("/admin/game")
     public ResponseEntity<?> getGame() {
@@ -221,7 +221,7 @@ public class GameController {
         return ResponseEntity.ok(gameService.getGame());
     }
 
-    // [AG-03]	게임 상세조회(관리자단)	getDetailGame()	게임 테이블을 상세조회한다.
+    // [AG-03]   게임 상세조회(관리자단)   getDetailGame()   게임 테이블을 상세조회한다.
     // URL : http://localhost:8080/saykorean/admin/game/detail?gameNo=1
     @GetMapping("/admin/game/detail")
     public ResponseEntity<?> getGameDetail(@RequestParam int gameNo) {
@@ -229,7 +229,7 @@ public class GameController {
         return ResponseEntity.ok(gameService.getGameDetail(gameNo));
     }
 
-    // [AG-04]	게임 삭제(관리자단)	deleteGame()	게임 테이블을 삭제한다.
+    // [AG-04]   게임 삭제(관리자단)   deleteGame()   게임 테이블을 삭제한다.
     // URL : http://localhost:8080/saykorean/admin/game?gameNo=1
     @DeleteMapping("/admin/game")
     public ResponseEntity<?> deleteGame(@RequestParam int gameNo) {

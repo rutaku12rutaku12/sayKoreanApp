@@ -9,7 +9,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import web.model.dto.point.PointRecordDto;
 import web.model.dto.user.*;
+import web.model.mapper.PointMapper;
 import web.model.mapper.UserMapper;
 import web.util.JwtUtil;
 
@@ -27,13 +29,28 @@ public class UserService {
 
     // 비크립트 라이브러리 객체 주입
     private final BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
+    private final PointMapper pointMapper;
+
+    // 회원가입 포인트 policy 번호
+    private final int signup_pointNo = 1;
+    // 로그인 포인트 policy 번호
+    private final int login_pointNo = 2;
+
 
     // [US-01] 회원가입 signUp()
     public int signUp(UserDto userDto) {
+
         // 비밀번호를 해쉬화
         userDto.setPassword(bcrypt.encode(userDto.getPassword()));
 
         int result = userMapper.signUp(userDto);
+
+        // 회원가입 포인트 기록 INSERT
+        PointRecordDto record = new PointRecordDto();
+        record.setPointNo( signup_pointNo );
+        record.setUserNo( userDto.getUserNo() );
+
+        pointMapper.insertPointRecord(record);
         // insert 성공 시 userNo 반환
         if (result >= 1) {
             return userDto.getUserNo();
@@ -66,7 +83,18 @@ public class UserService {
                 oauthUser.setUrole("USER");
 
                 userMapper.signUp(oauthUser);
+
+                // 소셜 회원가입도 포인트
+                PointRecordDto record = new PointRecordDto();
+                record.setPointNo(signup_pointNo);
+                record.setUserNo( userDto.getUserNo() );
+
+                pointMapper.insertPointRecord(record);
+
                 return oauthUser;
+
+
+
 
             }catch (DuplicateKeyException e){System.out.println("이미 가입된 이메일 입니다. "+ uid);
                 // 이미 가입되어 있는 경우, 다시 조회
@@ -96,6 +124,15 @@ public class UserService {
         if (!result) {
             return null;
         }
+
+        // 로그인 성공 시 포인트 적립
+        //  - point_record 테이블에 한 줄 INSERT
+        PointRecordDto record = new PointRecordDto();
+        record.setPointNo(login_pointNo);        // 로그인 policy 번호
+        record.setUserNo(user.getUserNo());       // 현재 로그인한 회원 번호
+        pointMapper.insertPointRecord(record);
+
+
         user.setPassword(null); // 비밀번호 비공개
 
         // 2 로그인 방식 나누기
