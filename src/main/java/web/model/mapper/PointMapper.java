@@ -1,6 +1,18 @@
 package web.model.mapper;
 
-public class PointMapper { // class start
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
+import web.model.dto.point.PointRecordDto;
 
 
-} // class end
+@Mapper
+public interface PointMapper {
+
+    @Insert("""
+        INSERT INTO pointLog (pointNo, userNo)
+        VALUES (#{pointNo}, #{userNo})
+        """)
+    int insertPointRecord(PointRecordDto dto);
+
+}
