@@ -42,7 +42,7 @@ export default function MyPage(props) {
   };
 
   // 최초 1번 렌더링
-  useEffect(() => { info(); onAttend(); getGenre(); getLang(); }, [])
+  useEffect(() => { info(); findAttend(); getGenre(); getLang(); }, [])
   // 내 정보 조회 함수
   const info = async () => {
     try {
@@ -57,7 +57,7 @@ export default function MyPage(props) {
   }
 
   // 출석 조회 함수 
-  const onAttend = async () => {
+  const findAttend = async () => {
     try {
       console.log("getAttend.exe");
       const option = { withCredentials: true }
