@@ -57,6 +57,7 @@ public class AttendController {
         }
         // List 담아주기
         List<AttendDto> result = attendService.getAttend(userNo);
+        System.out.println("List<AttendDto>: "+result);
         return ResponseEntity.status(200).body(result);
     }
 }
