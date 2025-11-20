@@ -7,6 +7,7 @@ import web.model.dto.study.ExamDto;
 import web.model.dto.study.GenreDto;
 import web.model.dto.common.LanguageDto;
 import web.model.dto.study.StudyDto;
+import web.model.mapper.PointMapper;
 import web.model.mapper.StudyMapper;
 
 import java.util.List;
@@ -37,6 +38,11 @@ public class StudyService { // class start
 
     // Mapper 의존성 주입 (생성자 주입)
     private final StudyMapper studyMapper;
+    private final PointMapper pointMapper;
+
+    // 교육 포인트 policy 번호
+    private final int login_pointNo = 3;
+
 
     /*
      * [1] 장르 목록

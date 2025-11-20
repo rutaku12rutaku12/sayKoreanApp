@@ -12,6 +12,7 @@ import web.model.dto.game.GameDto;
 import web.model.dto.game.GameLogDto;
 import web.model.entity.game.GameEntity;
 import web.model.entity.game.GameLogEntity;
+import web.model.mapper.PointMapper;
 import web.model.mapper.UserMapper;
 import web.repository.GameLogRepository;
 import web.repository.GameRepository;
