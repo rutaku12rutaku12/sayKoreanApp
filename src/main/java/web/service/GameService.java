@@ -68,6 +68,14 @@ public class GameService {
         return saveEntity.toDto();
     }
 
+    // [GL-02] 내 게임기록 전체 조회
+    public List<GameLogDto> getMyGameLog(Integer userNo) {
+        List<GameLogEntity> list = gameLogRepository.findByUserNo(userNo);
+        return list.stream()
+                .map(GameLogEntity::toDto)
+                .collect(Collectors.toList());
+    }
+
     // [GL-03]	내 게임기록 상세조회	getMyGameLogDetail()	사용자(본인)의 게임기록을 상세 조회한다
     public GameLogDto getMyGameLogDetail(int userNo, int gameLogNo) {
         // 1. gameLogNo(pk)로 엔티티 조회
