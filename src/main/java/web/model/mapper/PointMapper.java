@@ -18,7 +18,7 @@ public interface PointMapper {
 
     // 내 포인트 총합 조회
     @Select("""
-        SELECT COALESCE(SUM(pointNo), 0)
+        SELECT SUM(pointNo)
         FROM pointLog
         WHERE userNo = #{userNo}
         """)
