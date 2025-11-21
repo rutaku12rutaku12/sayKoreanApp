@@ -9,6 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import web.model.dto.point.PointDto;
 import web.model.dto.point.PointRecordDto;
 import web.model.dto.user.*;
 import web.model.mapper.PointMapper;
@@ -45,12 +46,18 @@ public class UserService {
 
         int result = userMapper.signUp(userDto);
 
-        // 회원가입 포인트 기록 INSERT
+        PointDto signupPoint = pointMapper.findByPointNo(signup_pointNo);
+
+// 2. 포인트 기록 INSERT
         PointRecordDto record = new PointRecordDto();
-        record.setPointNo( signup_pointNo );
-        record.setUserNo( userDto.getUserNo() );
+        record.setUserNo(userDto.getUserNo());
+        record.setPointNo(signupPoint.getPointNo());
+        record.setUpdatePoint(signupPoint.getUpdatePoint()); // 여기!
 
         pointMapper.insertPointRecord(record);
+
+        pointMapper.insertPointRecord(record);
+        System.out.println( "회원가입 포인트 : " + signup_pointNo );
         // insert 성공 시 userNo 반환
         if (result >= 1) {
             return userDto.getUserNo();
@@ -131,6 +138,7 @@ public class UserService {
         record.setPointNo(login_pointNo);        // 로그인 policy 번호
         record.setUserNo(user.getUserNo());       // 현재 로그인한 회원 번호
         pointMapper.insertPointRecord(record);
+        System.out.println( "로그인 포인트 : " + login_pointNo );
 
 
         user.setPassword(null); // 비밀번호 비공개

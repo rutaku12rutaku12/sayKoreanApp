@@ -580,6 +580,16 @@ INSERT INTO friend (frenStatus, frenUpdate, offer, receiver) VALUES
 (1, '2025-11-01 17:00:00', 28, 30),
 (1, '2025-11-01 17:15:00', 29, 1);
 
+-- 포인트 policy 샘플 데이터 입력
+INSERT INTO pointPolicy (pointName, updatePoint) VALUES
+    ('회원가입포인트', 1000),
+    ('출석포인트', 10),
+    ('오늘치 교육완수', 50),
+    ('시험완수', 100),
+    ('게임 성공', 10),
+    ('테마 구매', -2000);
+
+
 select * from genre;
 select * from study;
 select * from exam;
