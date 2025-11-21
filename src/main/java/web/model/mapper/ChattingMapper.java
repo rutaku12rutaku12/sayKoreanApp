@@ -148,6 +148,26 @@ ORDER BY lastTime DESC
             """)
     List<MessageDto> selectMessages(int roomNo);
 
+    @Select("""
+SELECT chatListNo 
+FROM chatList 
+WHERE chatListTitle = CONCAT(LEAST(#{u1}, #{u2}), '_', GREATEST(#{u1}, #{u2}))
+""")
+    Integer getChatListNoByUsers(@Param("u1") int u1, @Param("u2") int u2);
+
+
+    @Select("SELECT chatListTitle FROM chatList WHERE chatListNo = #{roomNo}")
+    String getChatListTitle(int roomNo);
+
+    @Update("""
+    UPDATE chatList
+    SET lastMessage = #{message},
+        lastTime = NOW()
+    WHERE chatListNo = #{chatListNo}
+""")
+    int updateLastMessage(@Param("chatListNo") int chatListNo,
+                          @Param("message") String message);
+
 //    @Delete("""
 //    DELETE FROM chat
 //    WHERE chatListNo = #{roomNo}

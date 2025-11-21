@@ -11,8 +11,11 @@ import java.util.List;
 public interface FriendsMapper {
 
     //친구 추가(요청)
-    @Insert("INSERT INTO friend (offer, receiver, frenStatus) VALUES (LEAST(#{u1}, #{u2}, GREATEST(#{u1}, #{u2}, 0)")
-    int addFriend(@Param("u1") int u1, @Param("u2")int u2);
+    @Insert("""
+    INSERT INTO friend (offer, receiver, frenStatus) 
+    VALUES (LEAST(#{u1}, #{u2}), GREATEST(#{u1}, #{u2}), 0)
+""")
+    int addFriend(@Param("u1") int u1, @Param("u2") int u2);
 
     // 2) 이메일로 userNo 조회
     @Select("SELECT userNo FROM users WHERE email = #{email}")
@@ -109,4 +112,9 @@ public interface FriendsMapper {
     //각 친구의 채팅방 정보 조회 (chatListTitle 기준)
     @Select("SELECT chatListTitle, chatListState, userNo FROM chatList WHERE chatListTitle = CONCAT(LEAST(#{offer}, #{receiver}), '_', GREATEST(#{offer}, #{receiver}))")//LEAST 는 두값 중 작은 값 반환 , GREATEST 는 두값 중 큰 값 반환 ex) 3_7 으로 반환되어 채팅방 확인
     ChattingDto findChatList(@Param("offer") int offer, @Param("receiver") int receiver);
+
+
+
+
+
 }

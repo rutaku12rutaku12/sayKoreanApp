@@ -72,4 +72,10 @@ public class ChattingService {
         }
     }
 
+    //실시간 채팅 업데이트
+    public void updateChatListLastMessage(int chatListNo, String message) {
+        chattingMapper.updateLastMessage(chatListNo, message);
+    }
+
+
 }
