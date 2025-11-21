@@ -3,10 +3,12 @@ package web.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import web.model.dto.point.PointRecordDto;
 import web.model.dto.study.ExamDto;
 import web.model.dto.common.RankingDto;
 import web.model.dto.test.TestDto;
 import web.model.dto.test.TestItemWithMediaDto;
+import web.model.mapper.PointMapper;
 import web.model.mapper.TestMapper;
 
 import java.util.ArrayList;
@@ -37,9 +39,13 @@ public class TestService {
     // [의존성] DB 접근 매퍼 + 자동 채점기(Gemini)
     private final TestMapper testMapper;
     private final GeminiScoringService gemini;
+    private final PointMapper pointMapper;
 
     // [상수] 주관식 정답 기준 점수(이상일 때 정답 처리)
     private static final int PASS_THRESHOLD = 60;
+
+    // 시험 포인트 policy 번호
+    private final int test_pointNo = 4;
 
     /*
      * [1] 시험 목록
@@ -170,7 +176,7 @@ public class TestService {
         return out;
     }
 
-    // ✅ 문항 DTO를 Map으로 변환 (TestItem에서 가져오는 로직 무한모드/하드모드에서 중복 데이터 제거)
+    // 문항 DTO를 Map으로 변환 (TestItem에서 가져오는 로직 무한모드/하드모드에서 중복 데이터 제거)
     private List<Map<String, Object>> convertItemsToMaps(List<TestItemWithMediaDto> items , int langNo ){
         List<Map<String, Object>> out = new ArrayList<>();
 
@@ -223,7 +229,7 @@ public class TestService {
         return out;
     }
 
-    // ✅ [2-1] 무한모드: 완료한 studyNo들의 모든 문항 반환
+    // [2-1] 무한모드: 완료한 studyNo들의 모든 문항 반환
     public List<Map<String, Object>> getItemsByStudyNos(List<Integer> studyNos, int langNo) {
         List<Map<String, Object>> allItems = new ArrayList<>();
 
@@ -236,7 +242,7 @@ public class TestService {
     }
 
 
-    // ✅ [2-2] 하드모드: 전체 DB의 모든 문항 반환
+    // [2-2] 하드모드: 전체 DB의 모든 문항 반환
     public List<Map<String, Object>> getAllItems(int langNo) {
         List<TestItemWithMediaDto> items = testMapper.findAllItems(langNo);
         return convertItemsToMaps(items, langNo);
@@ -265,7 +271,15 @@ public class TestService {
      * - mapper에서 SUM/COUNT 등을 통해 구현 가정
      */
     public RankingDto getScore(int userNo, int testNo, int testRound) {
+
+        // 회원가입 포인트 기록 INSERT
+        PointRecordDto record = new PointRecordDto();
+        record.setPointNo( test_pointNo );
+        record.setUserNo( userNo );
+
         return testMapper.getScore(userNo, testNo, testRound);
+
+
     }
 
     /*
