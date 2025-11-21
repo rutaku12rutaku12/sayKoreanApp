@@ -57,14 +57,25 @@ public class ChattingService {
 
     // 방 삭제
     public void deleteRoom(int u1, int u2) {
+
+        int a = Math.min(u1, u2);
+        int b = Math.max(u1, u2);
+
         Integer roomNo = chattingMapper.getRoomNoForDelete(u1, u2);
 
         if (roomNo != null) {
+//            chattingMapper.deleteMessages(roomNo);
             chattingMapper.deleteRoom(roomNo);
             System.out.println("🗑 채팅방 삭제됨 : roomNo = " + roomNo);
         } else {
             System.out.println("⚠ 삭제할 채팅방 없음");
         }
     }
+
+    //실시간 채팅 업데이트
+    public void updateChatListLastMessage(int chatListNo, String message) {
+        chattingMapper.updateLastMessage(chatListNo, message);
+    }
+
 
 }

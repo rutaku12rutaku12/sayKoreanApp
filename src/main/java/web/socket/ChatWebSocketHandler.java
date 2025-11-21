@@ -8,12 +8,11 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import web.model.dto.community.MessageDto;
+import web.model.mapper.ChattingMapper;
 import web.service.community.ChattingService;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
@@ -23,23 +22,22 @@ import java.util.stream.Collectors;
 public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private final ChattingService service;
+    private final ChattingMapper chattingMapper; // 🔥 추가
     private final ObjectMapper om = new ObjectMapper();
 
-    //방 번호별 세션 목록
+    // 방 번호별 세션 목록
     private final Map<Integer, List<WebSocketSession>> rooms =
             new ConcurrentHashMap<>();
 
-    @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception{
-        String query = session.getUri().getQuery(); //roomNo=3&userNo=1
 
-        // 웹에서 query가 null 로 들어올 수 있음 -> 방어코드 추가
-        if(query == null || !query.contains("roomNo") || !query.contains("userNo")) {
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        String query = session.getUri().getQuery(); // roomNo=3&userNo=1
+
+        if (query == null || !query.contains("roomNo") || !query.contains("userNo")) {
             System.out.println("❌ WebSocket 연결 실패: query null 또는 파라미터 없음");
             return;
         }
-
-
 
         Map<String, String> params = Arrays.stream(query.split("&"))
                 .map(s -> s.split("="))
@@ -55,24 +53,16 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
         System.out.println("🔗 WebSocket 연결됨 (room " + roomNo + ", user " + userNo + ")");
 
-        //기존 메시지 1개씩 전송 -> 지우고, 한번에 히스토리 전송
         List<MessageDto> history = service.getMessages(roomNo);
 
         ObjectNode historyPayload = om.createObjectNode();
         historyPayload.put("type", "HISTORY");
         historyPayload.put("roomNo", roomNo);
-        historyPayload.put("messages", om.valueToTree(history));
-//        for (MessageDto m : history){
-//            ObjectNode out = om.createObjectNode();
-//            out.put("sendNo", m.getSendNo());
-//            out.put("message", m.getChatMessage());
-//            out.put("time", m.getChatTime());
-//            out.put("type", "history");//히스토리 타입 구분
+        historyPayload.set("messages", om.valueToTree(history));
 
         session.sendMessage(new TextMessage(historyPayload.toString()));
 
         System.out.println("📨 기존 메시지 " + history.size() + "개 전송 완료");
-
     }
 
 
@@ -82,46 +72,55 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         Integer roomNo = (Integer) session.getAttributes().get("roomNo");
         Integer userNo = (Integer) session.getAttributes().get("userNo");
 
-        if (roomNo == null || userNo == null) {
-            System.out.println("❌ roomNo/userNo 없음");
-            return;
-        }
-
-        // 메시지 파싱
         var root = om.readTree(message.getPayload());
 
-        // 🔥 Flutter/웹 모두 message 필드만 사용하도록 통일 (최소 변경)
         String msg = null;
 
-        // Flutter → message
         if (root.hasNonNull("message")) {
             msg = root.get("message").asText();
-        }
-        // 웹(React) → content
-        else if (root.hasNonNull("content")) {
+        } else if (root.hasNonNull("content")) {
             msg = root.get("content").asText();
         }
 
-        if (msg == null || msg.isBlank()) {
-            System.out.println("⚠️ 잘못된 메시지 payload : " + message.getPayload());
+        if (msg == null || msg.isBlank()) return;
+
+        // 🔥 roomNo로 chatListTitle → u1, u2 추출
+        String title = chattingMapper.getChatListTitle(roomNo);
+        if (title == null) {
+            System.out.println("❌ chatListTitle 조회 실패! roomNo=" + roomNo);
             return;
         }
 
-        // DB 저장
+        String[] parts = title.split("_");
+        int u1 = Integer.parseInt(parts[0]);
+        int u2 = Integer.parseInt(parts[1]);
+
+        // 현재 유저와 비교 → 상대 유저 찾기
+        int otherUser = (u1 == userNo) ? u2 : u1;
+
+        // 🔥 chatListNo 정확히 조회 (roomNo가 아님!)
+        Integer chatListNo = chattingMapper.getChatListNoByUsers(u1, u2);
+
+        if (chatListNo == null) {
+            System.out.println("❌ chatListNo 조회 실패! user=" + u1 + ", " + u2);
+            return;
+        }
+
+        // 메시지 DTO 저장
         MessageDto dto = new MessageDto();
-        dto.setChatListNo(roomNo);
+        dto.setChatListNo(chatListNo);
         dto.setSendNo(userNo);
         dto.setChatMessage(msg);
         dto.setChatTime(LocalDateTime.now().toString());
 
-        service.saveMessage(dto);// messageNo 자동 세팅됨
+        service.saveMessage(dto);
+        service.updateChatListLastMessage(chatListNo, msg);
 
-        System.out.println("💾 저장됨 → roomNo=" + roomNo + ", userNo=" + userNo + ", msg=" + msg);
+        System.out.println("💾 저장됨 → chatListNo=" + chatListNo + ", msg=" + msg);
 
-        // 전송 메시지
         ObjectNode out = om.createObjectNode();
         out.put("type", "CHAT");
-        out.put("messageNo", dto.getMessageNo()); // 추가
+        out.put("messageNo", dto.getMessageNo());
         out.put("sendNo", userNo);
         out.put("message", msg);
         out.put("time", dto.getChatTime());
@@ -135,5 +134,4 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             if (ws.isOpen()) ws.sendMessage(sendMsg);
         }
     }
-
 }
