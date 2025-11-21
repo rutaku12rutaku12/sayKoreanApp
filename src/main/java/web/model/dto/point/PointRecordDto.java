@@ -20,7 +20,7 @@ public class PointRecordDto { // class start
      *    첫 번째 컬럼은 pointRecordNo (포인트기록번호) 로 가정했어!
      */
 
-    private int pointRecordNo;   // PK: 포인트기록번호
+    private int pointLogNo;   // PK: 포인트기록번호
     private LocalDateTime updateDate; // 포인트적립일시 (DEFAULT now())
     private int pointNo;         // FK: 포인트번호 (PointDto.pointNo)
     private int userNo;          // FK: 사용자번호
