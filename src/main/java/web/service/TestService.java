@@ -406,46 +406,61 @@ public class TestService {
             String userAnswer,    // 주관식 사용자의 자유 입력(객관식이면 보통 null/빈 문자열)
             int langNo            // 언어 번호(표기/채점 groundTruth 선택)
     ) {
-        // 1) 문항 로드 (언어 반영)
-        //    - 모든 문항을 가져온 뒤 특정 testItemNo를 가진 문항을 탐색
-        //    - (성능 최적화 여지) mapper에 단건 조회 API를 추가해도 좋음
-        List<TestItemWithMediaDto> allItems = testMapper.findTestItemsWithMedia(testNo, langNo);
 
         // testItemNo에 해당하는 문항과 그 인덱스 찾기
-        int itemIndex = -1;
         TestItemWithMediaDto item = null;
-        for (int i = 0; i < allItems.size(); i++) {
-            if (allItems.get(i).getTestItemNo() == testItemNo) {
-                item = allItems.get(i);
-                itemIndex = i;
-                break;
+        int itemIndex = -1;
+        int questionType;
+
+        // [추가] ===== 타입 판별: 정기시험 vs 무한/하드모드 =====
+        if (testNo == 0) {
+            // 무한/하드모드: testItemNo로 단일 문항 직접 조회
+            item = testMapper.findTestItemByNo(testItemNo, langNo);
+
+            // 문항이 없으면 즉시 예외 처리(클라이언트/데이터 불일치 방지)
+            if (item == null) {
+                throw new IllegalArgumentException("잘못된 testItemNo 입니다.");
             }
-        }
-        // 문항이 없으면 즉시 예외 처리(클라이언트/데이터 불일치 방지)
-        if (item == null) {
-            throw new IllegalArgumentException("잘못된 testItemNo 입니다.");
+
+            // 무한/하드모드: 미디어 기반
+            questionType = detectQuestionType(item);
+            System.out.printf("[DEBUG] 무한/하드모드 - testItemNo=%d, 미디어 기반 타입=%d%n",
+                    testItemNo, questionType);
+
+        } else {
+            // 정기시험: 순서 기반 (기존 로직)
+            // 1) 문항 로드 (언어 반영)
+            //    - 모든 문항을 가져온 뒤 특정 testItemNo를 가진 문항을 탐색
+            //    - (성능 최적화 여지) mapper에 단건 조회 API를 추가해도 좋음
+            List<TestItemWithMediaDto> allItems = testMapper.findTestItemsWithMedia(testNo, langNo);
+
+            // testItemNo에 해당하는 문항 찾기
+            for (int i = 0; i < allItems.size(); i++) {
+                if (allItems.get(i).getTestItemNo() == testItemNo) {
+                    item = allItems.get(i);
+                    itemIndex = i;
+                    break;
+                }
+            }
+
+            // 문항이 없으면 즉시 예외 처리(클라이언트/데이터 불일치 방지)
+            if (item == null) {
+                throw new IllegalArgumentException("잘못된 testItemNo 입니다.");
+            }
+
+            // 순서 기반 타입 판별
+            questionType = itemIndex % 3;
+            System.out.printf("[DEBUG] 정기시험 - testItemNo=%d, 순서 기반 타입=%d%n",
+                    testItemNo, questionType);
         }
 
         // 사용 언어로 선택된 질문 텍스트 확보(null 방어 + trim)
         final String q = nullToEmpty(item.getQuestionSelected()).trim();
-        System.out.printf("[DEBUG] testItemNo=%d, question='%s'%n", testItemNo, q);
+        System.out.printf("[DEBUG] question='%s'%n", q);
 
         // ===== 유형 판별 (문항 순서 기반) =====
         // 0=그림 객관식, 1=음성 객관식, 2=주관식
 //        int questionType = itemIndex % 3;
-
-        // [추가] ===== 타입 판별: 정기시험 vs 무한/하드모드 =====
-        int questionType;
-
-        if (testNo > 0) {
-            // 정기시험: 순서 기반 (기존 로직)
-            questionType = itemIndex % 3;
-            System.out.printf("[DEBUG] 정기시험 - 순서 기반 타입: %d%n", questionType);
-        } else {
-            // 무한/하드모드: 미디어 기반
-            questionType = detectQuestionType(item);
-            System.out.printf("[DEBUG] 무한/하드모드 - 미디어 기반 타입: %d%n", questionType);
-        }
 
         final boolean isMC = (questionType == 0 || questionType == 1); // 객관식 여부
         final boolean isSub = (questionType == 2);                       // 주관식 여부
