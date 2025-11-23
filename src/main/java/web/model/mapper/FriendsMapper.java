@@ -12,18 +12,25 @@ public interface FriendsMapper {
 
     //친구 추가(요청)
     @Insert("""
-    INSERT INTO friend (offer, receiver, frenStatus) 
-    VALUES (LEAST(#{u1}, #{u2}), GREATEST(#{u1}, #{u2}), 0)
-""")
-    int addFriend(@Param("u1") int u1, @Param("u2") int u2);
+    INSERT INTO friend (offer, receiver, frenStatus)
+    VALUES (LEAST(#{offer}, #{receiver}), GREATEST(#{offer}, #{receiver}), 0)
+    """)
+    int addFriend(@Param("offer") int offer, @Param("receiver") int receiver);
 
     // 2) 이메일로 userNo 조회
     @Select("SELECT userNo FROM users WHERE email = #{email}")
     Integer findUserNoByEmail(String email);
 
     //친구 상태 변경(수락, 거절, 삭제, 차단 등)
-    @Update("UPDATE friend SET frenStatus = #{status}, frenUpdate = NOW() WHERE offer = LEAST(#{u1}, #{u2}) AND receiver = GREATEST (#{u1}, #{u2})")
-    int updateStatus(@Param("u1") int offer, @Param("u2") int receiver, @Param("status") int status);
+    @Update("""
+    UPDATE friend 
+    SET frenStatus = #{status}, frenUpdate = NOW() 
+    WHERE offer = LEAST(#{offer}, #{receiver}) 
+      AND receiver = GREATEST (#{offer}, #{receiver})
+    """)
+    int updateStatus(@Param("offer") int offer,
+                     @Param("receiver") int receiver,
+                     @Param("status") int status);
 
     //친구 관계 중복 확인 + *상태 확인*
     @Select("SELECT frenStatus FROM friend WHERE ((offer = #{offer} AND receiver = #{receiver}) OR (offer = #{receiver} AND receiver = #{offer})) AND frenStatus IN (0,1) LIMIT 1")

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import web.model.dto.community.MessageDto;
+import web.model.dto.community.ReportMessageDto;
 import web.model.mapper.ChattingMapper;
 
 import java.util.List;
@@ -16,66 +17,87 @@ public class ChattingService {
 
     private final ChattingMapper chattingMapper;
 
-    // 친구 수락 시 1:1 채팅방 생성 또는 방 번호 반환
+    /**
+     * 친구 수락 시 1:1 채팅방 생성 또는 기존 방 번호 반환
+     */
     public int ensureRoom(int u1, int u2) {
-        System.out.println("🔍 checkRoom(" + u1 + ", " + u2 + ") = " + chattingMapper.checkRoom(u1, u2));
+        // 방 없으면 생성
         if (chattingMapper.checkRoom(u1, u2) == 0) {
-            System.out.println("➡ createRoom 실행됨");
             chattingMapper.createRoom(u1, u2);
-        }else {
-            System.out.println("❗ 이미 방이 존재함");
         }
-        int roomNo = chattingMapper.getRoomNo(u1, u2);
-        System.out.println("📌 최종 roomNo = " + roomNo);
+
+        Integer roomNo = chattingMapper.getRoomNo(u1, u2);
+        if (roomNo == null) {
+            throw new IllegalStateException("채팅방 생성/조회 실패 (u1=" + u1 + ", u2=" + u2 + ")");
+        }
         return roomNo;
     }
 
-    // 기존 친구 전체에 대한 방 생성 (초기 1회 실행)
-    public int createRoomsForAllFriends() {
-        return chattingMapper.createRoomsForExistingFriends();
-    }
-
-    // 채팅방 목록 조회
-    public List<Map<String,Object>> getMyRooms(int userNo) {
-        return chattingMapper.getMyRooms(userNo);
-    }
-
-    // 메시지 목록
-    public List<Map<String, Object>> messages(int roomNo) {
-        return chattingMapper.getMessages(roomNo);
-    }
-
-    // 메시지 저장
-    public void saveMessage(MessageDto dto) {
-        chattingMapper.insertMessage(dto);
-    }
-
-    // 메시지 히스토리 불러오기
-    public List<MessageDto> getMessages(int roomNo){
+    /**
+     * 채팅방 히스토리 조회
+     */
+    @Transactional(readOnly = true)
+    public List<MessageDto> getMessages(int roomNo) {
         return chattingMapper.selectMessages(roomNo);
     }
 
-    // 방 삭제
-    public void deleteRoom(int u1, int u2) {
-
-        int a = Math.min(u1, u2);
-        int b = Math.max(u1, u2);
-
-        Integer roomNo = chattingMapper.getRoomNoForDelete(u1, u2);
-
-        if (roomNo != null) {
-//            chattingMapper.deleteMessages(roomNo);
-            chattingMapper.deleteRoom(roomNo);
-            System.out.println("🗑 채팅방 삭제됨 : roomNo = " + roomNo);
-        } else {
-            System.out.println("⚠ 삭제할 채팅방 없음");
+    /**
+     * 메시지 저장
+     */
+    public void saveMessage(MessageDto dto) {
+        int rows = chattingMapper.insertMessage(dto);
+        if (rows != 1) {
+            throw new IllegalStateException("메시지 저장 실패");
         }
     }
 
-    //실시간 채팅 업데이트
-    public void updateChatListLastMessage(int chatListNo, String message) {
-        chattingMapper.updateLastMessage(chatListNo, message);
+    /**
+     * 내 채팅방 목록
+     */
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getMyRooms(int userNo) {
+        return chattingMapper.getMyRooms(userNo);
     }
+
+    /**
+     * 친구 삭제(frenStatus = -1) 시 채팅방 삭제용
+     */
+    public void deleteRoomsByUsers(int u1, int u2) {
+        chattingMapper.deleteRoomsByUsers(u1, u2);
+    }
+
+    /**
+     * 메시지 신고
+     * - messageNo로 원본 메시지 찾기
+     * - sendNo를 신고당한 사람(reportedNo)으로 사용
+     * - chatMessage를 snapshot으로 저장
+     */
+    public void reportMessage(int messageNo, int reporterNo, String reason) {
+        // 1) 중복 신고 방지
+        int count = chattingMapper.countReportByUser(messageNo, reporterNo);
+        if (count > 0) {
+            throw new IllegalStateException("이미 신고한 메시지입니다.");
+        }
+
+        // 2) 메시지 조회
+        MessageDto msg = chattingMapper.findMessageByNo(messageNo);
+        if (msg == null) {
+            throw new IllegalArgumentException("해당 메시지를 찾을 수 없습니다. messageNo=" + messageNo);
+        }
+
+        int reportedNo = msg.getSendNo();  // 메시지 보낸 사람 = 신고 당한 사람
+
+        // 3) DTO 만들어서 저장
+        ReportMessageDto dto = new ReportMessageDto();
+        dto.setMessageNo(messageNo);
+        dto.setReporterNo(reporterNo);
+        dto.setReportedNo(reportedNo);
+        dto.setReportReason(reason);
+        dto.setSnapshotMessage(msg.getChatMessage());
+
+        chattingMapper.insertReportMessage(dto);
+    }
+
 
 
 }
