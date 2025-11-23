@@ -9,6 +9,7 @@ import web.model.dto.study.GenreDto;
 import web.model.dto.common.LanguageDto;
 import web.model.dto.study.StudyDto;
 import web.service.StudyService;
+import web.util.JwtUtil;
 
 import java.util.List;
 
@@ -40,6 +41,7 @@ public class StudyController {
 
     // StudyService : DB 조회 및 비즈니스 로직 처리
     private final StudyService studyService;
+    private final JwtUtil jwtUtil;
 
 
     /*
@@ -189,5 +191,35 @@ public class StudyController {
             @RequestParam(defaultValue = "1") int langNo
     ) {
         return ResponseEntity.ok(studyService.getPrevExam(studyNo, currentExamNo, langNo));
+    }
+
+    @PostMapping("/complete-point")
+    public ResponseEntity<Void> completeStudyPoint(
+            @RequestHeader(value = "Authorization", required = false) String authorizationHeader
+    ) {
+        System.out.println("==== [StudyController] /saykorean/study/complete-point 호출 ====");
+
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            System.out.println(">> Authorization 헤더 없음 또는 Bearer 아님");
+            return ResponseEntity.status(401).build();
+        }
+
+        String token = authorizationHeader.substring(7);
+
+        if (!jwtUtil.isTokenValid(token)) {
+            System.out.println(">> 토큰 유효성 실패");
+            return ResponseEntity.status(401).build();
+        }
+
+        Integer userNo = jwtUtil.getUserNo(token);
+        System.out.println(">> 토큰에서 꺼낸 userNo = " + userNo);
+
+        if (userNo == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        studyService.giveStudyCompletePoint(userNo);
+
+        return ResponseEntity.ok().build();
     }
 }
