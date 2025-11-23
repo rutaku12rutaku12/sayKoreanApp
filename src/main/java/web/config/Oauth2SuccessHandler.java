@@ -32,44 +32,65 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
         // OAuth2 로그인 성공 후 호출
         System.out.println("request = " + request + ", response = "
                 + response + ", authentication = " + authentication);
+
         // 로그인 성공한 회원의 타사 발급한 토큰 확인
         OAuth2AuthenticationToken authToken = (OAuth2AuthenticationToken) authentication;
         System.out.println("authToken = " + authToken);
+
         // 로그인 성공한 회원 동의항목 정보 추출
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         System.out.println("oAuth2User = " + oAuth2User);
-        // 타사 로그인 인지 식별 , 서로 다른 회사별 동의항목
+
+        // 타사 로그인 인지 식별
         String provider = authToken.getAuthorizedClientRegistrationId();
         System.out.println("provider = " + provider);
+
         // 공급자별 사용자 정보(email, name) 추출
-        String uid = null ; String name = null ;
-        if( provider.equals("google")){
-            // Google: 이메일과 이름 직접 추출
+        String uid = null;
+        String name = null;
+
+        if(provider.equals("google")) {
             uid = oAuth2User.getAttribute("email");
             name = oAuth2User.getAttribute("name");
         }
-        else if( provider.equals("kakao")){
-            // Kakao: kakao_account 안에서 이메일과 프로필 닉네임 추출
+        else if(provider.equals("kakao")) {
             Map<String, Object> kakaoAccount = oAuth2User.getAttribute("kakao_account");
-            // 카카오 계정이 없거나 카카오계정에 이메일이 없을 경우 로그인 실패 처리
-            if(kakaoAccount == null || kakaoAccount.get("email") == null){
-                response.sendRedirect("http://localhost:5173/login");
+
+            // 🔥 Flutter/React 분기 처리
+            String userAgent = request.getHeader("User-Agent");
+            boolean isFlutter = userAgent != null && userAgent.contains("Flutter");
+
+            if(kakaoAccount == null || kakaoAccount.get("email") == null) {
+                if(isFlutter) {
+                    response.sendRedirect("saykoreanapp://login?error=email_required");
+                } else {
+                    response.sendRedirect("http://localhost:5173/login?error=email_required");
+                }
                 return;
             }
+
             uid = (String)kakaoAccount.get("email");
             System.out.println("uid = " + uid);
             Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
             name = (String)profile.get("nickname");
         }
+
         // oauth2 정보를 데이터베이스 저장 (가입 처리)
-        UserDto userDto = userService.oauth2UserSignup( uid, name);
+        UserDto userDto;
         try {
             userDto = userService.oauth2UserSignup(uid, name);
         } catch (IllegalStateException e) {
-            // 이메일 중복 예외 발생 시 로그인 실패 후 로그인 페이지로 리다이렉트
             System.out.println("OAuth2 signup error: " + e.getMessage());
-            response.sendRedirect(
-                    "http://localhost:5173/login?error=email_exists");
+
+            // 🔥 Flutter/React 분기 처리
+            String userAgent = request.getHeader("User-Agent");
+            boolean isFlutter = userAgent != null && userAgent.contains("Flutter");
+
+            if(isFlutter) {
+                response.sendRedirect("saykoreanapp://login?error=email_exists");
+            } else {
+                response.sendRedirect("http://localhost:5173/login?error=email_exists");
+            }
             return;
         }
 
@@ -80,14 +101,25 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
                         null,
                         List.of(new SimpleGrantedAuthority("USER"))
                 );
+
         // SecurityContextHolder에 인증정보 세팅
         SecurityContextHolder.getContext().setAuthentication(auth);
+
         // 세션에 사용자 번호 저장
         HttpSession session = request.getSession(true);
         session.setAttribute("userNo", userDto.getUserNo());
-        // 로그인 성공시 (프론트엔드 루트) 경로로 리다이렉트
-        response.sendRedirect("http://localhost:5173/home");
 
+        // 🔥 Flutter/React 분기 처리
+        String userAgent = request.getHeader("User-Agent");
+        boolean isFlutter = userAgent != null && userAgent.contains("Flutter");
 
+        if(isFlutter) {
+            // Flutter: 커스텀 스킴으로 세션 ID 전달
+            String sessionId = session.getId();
+            response.sendRedirect("saykoreanapp://login?session=" + sessionId);
+        } else {
+            // React: 기존 웹 리다이렉트
+            response.sendRedirect("http://localhost:5173/home");
+        }
     }
 }
