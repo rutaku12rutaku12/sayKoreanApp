@@ -14,6 +14,7 @@ import web.model.dto.point.PointRecordDto;
 import web.model.dto.user.*;
 import web.model.mapper.PointMapper;
 import web.model.mapper.UserMapper;
+import web.service.mail.MailService;
 import web.util.JwtUtil;
 
 import java.util.Random;
@@ -27,6 +28,7 @@ public class UserService {
     private final RankingService rankingService;
     private final JwtUtil jwtUtil;
     private final GameService gameService; // 추가
+    private final MailService mailService;
 
     // 비크립트 라이브러리 객체 주입
     private final BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
@@ -210,7 +212,7 @@ public class UserService {
 
     // [US-08] 비밀번호 찾기 findPwrd()
     @Transactional
-    public String findPwrd(String name, String phone, String email) {
+    public void findPwrd(String name, String phone, String email) {
 
         TemporaryPwrdDto dto = userMapper.findPwrd(name, phone, email);
         if (dto==null){
@@ -236,7 +238,8 @@ public class UserService {
                 .password(result)
                 .build());
 
-        return tamPwrd;
+        mailService.sendPass(email,tamPwrd);
+        System.out.println("발송 메일: "+email+" 발송 비밀번호: "+tamPwrd);
     } // func end
 
     // [US-09] 회원정보 수정 updateUserInfo()

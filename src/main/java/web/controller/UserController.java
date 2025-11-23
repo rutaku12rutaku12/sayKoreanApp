@@ -170,10 +170,12 @@ public class UserController {
     @GetMapping("/findpwrd")
     public ResponseEntity<String> findPwrd(@NotBlank @RequestParam String name, @Pattern(regexp = "(^\\+?[1-9]\\d{7,14}$)", message = "올바른 휴대폰 번호를 입력해주세요.")
     @NotBlank @RequestParam String phone, @NotBlank @RequestParam String email){
-        String result = userService.findPwrd(name, phone, email);
-        if( result == null){return ResponseEntity.status(400).body("올바른 값을 입력해주세요.");}
-        System.out.println("임시 비밀번호 발급 : "+result);
-        return ResponseEntity.status(200).body(result);
+        try {
+            userService.findPwrd(name,phone,email);
+            return ResponseEntity.ok("임시 비밀번호가 이메일로 발송되었습니다.");
+        }catch (RuntimeException e){
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
     } // func end
 
     // [US-09] 회원정보 수정 updateUserInfo()
