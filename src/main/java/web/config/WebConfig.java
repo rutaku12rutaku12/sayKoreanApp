@@ -2,6 +2,7 @@ package web.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -60,5 +61,20 @@ public class WebConfig implements WebMvcConfigurer {
             log.info("   - 쓰기 권한: {}", uploadDir.canWrite());
             log.info("   - 실행 권한: {}", uploadDir.canExecute());
         }
+    }
+
+    /**
+     * ✅ CORS 설정 추가 (모바일 앱 접근 허용)
+     */
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOriginPatterns("*") // 모든 출처 허용
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true)
+                .maxAge(3600);
+
+        log.info("✅ CORS 설정 완료: 모든 출처 허용");
     }
 }
