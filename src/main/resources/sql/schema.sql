@@ -405,14 +405,14 @@ CREATE TABLE IF NOT EXISTS friend (
 
 
   -- 테마 마스터
-  CREATE TABLE theme (
+  CREATE TABLE IF NOT EXISTS theme (
     theme_id   INT AUTO_INCREMENT PRIMARY KEY,
     theme_name VARCHAR(100) NOT NULL,
     price      INT NOT NULL DEFAULT 2000
   );
 
   -- 유저가 소유한 테마
-  CREATE TABLE userTheme (
+  CREATE TABLE IF NOT EXISTS  userTheme (
     userThemeNo INT AUTO_INCREMENT PRIMARY KEY,
     user_no   INT NOT NULL,
     theme_id  INT NOT NULL,
