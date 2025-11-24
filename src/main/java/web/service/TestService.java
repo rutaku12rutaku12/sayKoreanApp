@@ -3,6 +3,7 @@ package web.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import web.model.dto.point.PointDto;
 import web.model.dto.point.PointRecordDto;
 import web.model.dto.study.ExamDto;
 import web.model.dto.common.RankingDto;
@@ -268,14 +269,18 @@ public class TestService {
     /*
      * [5-1] 점수 집계 (특정 회차)
      * - 회차별 총점/정답수 등을 집계하여 반환
-     * - mapper에서 SUM/COUNT 등을 통해 구현 가정
+     * - mapper에서 SUM/COUNT 등을 통해 구현
      */
     public RankingDto getScore(int userNo, int testNo, int testRound) {
 
-        // 회원가입 포인트 기록 INSERT
+
+        PointDto testPoint = pointMapper.findByPointNo(test_pointNo);
+        // 포인트 기록 INSERT
         PointRecordDto record = new PointRecordDto();
         record.setPointNo( test_pointNo );
         record.setUserNo( userNo );
+        record.setUpdatePoint( testPoint.getUpdatePoint() );
+
 
         return testMapper.getScore(userNo, testNo, testRound);
 
