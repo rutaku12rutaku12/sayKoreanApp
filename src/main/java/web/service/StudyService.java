@@ -3,6 +3,7 @@ package web.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import web.model.dto.point.PointDto;
 import web.model.dto.point.PointRecordDto;
 import web.model.dto.study.ExamDto;
 import web.model.dto.study.GenreDto;
@@ -10,6 +11,7 @@ import web.model.dto.common.LanguageDto;
 import web.model.dto.study.StudyDto;
 import web.model.mapper.PointMapper;
 import web.model.mapper.StudyMapper;
+import web.util.JwtUtil;
 
 import java.util.List;
 
@@ -41,8 +43,11 @@ public class StudyService { // class start
     private final StudyMapper studyMapper;
     private final PointMapper pointMapper;
 
+
     // 교육 포인트 policy 번호
-    private final int login_pointNo = 3;
+    private final int study_pointNo = 3;
+
+
 
 
     /*
@@ -133,8 +138,6 @@ public class StudyService { // class start
     }
 
 
-    // "오늘치 교육완수" 포인트 정책 번호 (point 테이블 PK에 맞춰서)
-    private static final int STUDY_COMPLETE_POINT_NO = 3;
 
     /*
      * [6] 오늘치 교육완수 포인트 지급
@@ -143,9 +146,12 @@ public class StudyService { // class start
      */
     public void giveStudyCompletePoint(int userNo) {
 
+        PointDto studyPoint = pointMapper.findByPointNo(study_pointNo);
+
         PointRecordDto record = new PointRecordDto();
         record.setUserNo(userNo);
-        record.setPointNo(STUDY_COMPLETE_POINT_NO);
+        record.setPointNo(study_pointNo);
+        record.setUpdatePoint( studyPoint.getPointNo() );
 
         pointMapper.insertPointRecord(record);
     }

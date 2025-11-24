@@ -3,6 +3,7 @@ package web.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import web.model.dto.point.PointDto;
 import web.model.dto.point.PointRecordDto;
 import web.model.dto.study.ExamDto;
 import web.model.dto.common.RankingDto;
@@ -355,10 +356,14 @@ public class TestService {
      */
     public RankingDto getScore(int userNo, int testNo, int testRound) {
 
-        // 회원가입 포인트 기록 INSERT
+
+        PointDto testPoint = pointMapper.findByPointNo(test_pointNo);
+        // 포인트 기록 INSERT
         PointRecordDto record = new PointRecordDto();
-        record.setPointNo(test_pointNo);
-        record.setUserNo(userNo);
+        record.setPointNo( test_pointNo );
+        record.setUserNo( userNo );
+        record.setUpdatePoint( testPoint.getUpdatePoint() );
+
 
         return testMapper.getScore(userNo, testNo, testRound);
 
