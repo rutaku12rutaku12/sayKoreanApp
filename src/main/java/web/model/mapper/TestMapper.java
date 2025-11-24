@@ -354,4 +354,44 @@ public interface TestMapper { // mapper start
             @Param("limit") int limit,
             @Param("langNo") int langNo
     );
+
+    /*
+     * [추가] 단일 문항 조회 (무한/하드모드용)
+     * ------------------------------------------------------
+     * testItemNo로 문항 1개를 직접 조회
+     * 무한/하드모드에서 답안 제출 시 사용
+     */
+    @Select("""
+    SELECT 
+        ti.testItemNo,
+        ti.testNo,
+        ti.examNo,
+        CASE #{langNo}
+            WHEN 1 THEN ti.question
+            WHEN 2 THEN ti.questionJp
+            WHEN 3 THEN ti.questionCn
+            WHEN 4 THEN ti.questionEn
+            WHEN 5 THEN ti.questionEs
+            ELSE ti.question
+        END AS questionSelected,
+        e.imageName,
+        e.imagePath
+    FROM testItem ti
+    JOIN exam e ON e.examNo = ti.examNo
+    WHERE ti.testItemNo = #{testItemNo}
+""")
+    @Results(id = "SingleTestItemMap", value = {
+            @Result(column = "testItemNo", property = "testItemNo", id = true),
+            @Result(column = "testNo", property = "testNo"),
+            @Result(column = "examNo", property = "examNo"),
+            @Result(column = "questionSelected", property = "questionSelected"),
+            @Result(column = "imageName", property = "imageName"),
+            @Result(column = "imagePath", property = "imagePath"),
+            @Result(property = "audios", column = "examNo",
+                    many = @Many(select = "findAudiosByExamNo"))
+    })
+    TestItemWithMediaDto findTestItemByNo(
+            @Param("testItemNo") int testItemNo,
+            @Param("langNo") int langNo
+    );
 } // mapper end
