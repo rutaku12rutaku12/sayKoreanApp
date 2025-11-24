@@ -370,6 +370,38 @@ CREATE TABLE IF NOT EXISTS friend (
 ) ENGINE=InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci;
+  
+  -- =====================================================================
+-- 신고메시지 관련 테이블
+-- =====================================================================
+
+-- 신고메시지 (FK: messageNo)
+  CREATE TABLE IF NOT EXISTS reportMessage (
+  reportNo        INT          NOT NULL AUTO_INCREMENT,
+  messageNo       INT          NOT NULL,  -- 신고한 메시지 FK
+  reporterNo      INT          NOT NULL,  -- 신고를 한 유저
+  reportedNo      INT          NOT NULL,  -- 신고 당한 유저(= 메세지 보낸 사람)
+  reportReason    VARCHAR(500) NOT NULL,  -- 신고 사유
+  snapshotMessage VARCHAR(1000) NOT NULL, -- 신고 시점의 메시지 내용
+  reportStatus    TINYINT      NOT NULL DEFAULT 0, -- 0: 새 신고, 1: 처리중, 2: 완료, 3: 무효
+  reportTime      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (reportNo),
+  CONSTRAINT fk_report_message_chat
+    FOREIGN KEY (messageNo) REFERENCES chat(messageNo)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_report_message_reporter
+    FOREIGN KEY (reporterNo) REFERENCES users(userNo)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_report_message_reported
+    FOREIGN KEY (reportedNo) REFERENCES users(userNo)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  -- 같은 사람이 같은 메시지를 여러 번 신고 못 하게
+  UNIQUE KEY uk_report_message (messageNo, reporterNo)
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci;
+
 
 
     select * from genre;
@@ -389,6 +421,7 @@ CREATE TABLE IF NOT EXISTS friend (
     SELECT * FROM pointPolicy;
     SELECT * FROM pointLog;
     SELECT * FROM friend;
+    SELECT * FROM reportMessage;
 
 
 
