@@ -263,6 +263,8 @@ public class TestService {
         return m;
     }
 
+
+
     /*
      * ========================================
      * 핵심 헬퍼 메서드: 미디어 기반 타입 판별
@@ -492,7 +494,6 @@ public class TestService {
 
         // testItemNo에 해당하는 문항과 그 인덱스 찾기
         TestItemWithMediaDto item = null;
-        int itemIndex = -1;
         int questionType;
 
         // [추가] ===== 타입 판별: 정기시험 vs 무한/하드모드 =====
@@ -515,6 +516,7 @@ public class TestService {
             //    - 모든 문항을 가져온 뒤 특정 testItemNo를 가진 문항을 탐색
             //    - (성능 최적화 여지) mapper에 단건 조회 API를 추가해도 좋음
             List<TestItemWithMediaDto> allItems = testMapper.findTestItemsWithMedia(testNo, langNo);
+            int itemIndex = -1;
 
             // testItemNo에 해당하는 문항 찾기
             for (int i = 0; i < allItems.size(); i++) {
