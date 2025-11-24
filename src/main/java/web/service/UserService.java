@@ -222,7 +222,7 @@ public class UserService {
         Random random = new Random();
         // 임시비밀번호로 사용할 빈 문자열 생성
         String tamPwrd = "";
-        for (int i = 1; i <= 6; i++) { // 6자리 만들기 위한 6회전반복문
+        for (int i = 1; i <= 8; i++) { // 8자리 만들기 위한 8회전반복문
             int val = random.nextInt(26) + 97;
             char str = (char) val;
             System.out.println("임시 비밀번호 추출 중.."+str);
