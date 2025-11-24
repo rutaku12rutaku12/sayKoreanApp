@@ -292,13 +292,19 @@ public class TestService {
      * 무한/하드모드용: 미디어 기반 타입 판별로 문항 변환
      */
     private List<Map<String, Object>> convertItemsWithMediaTypeDetection(
-            List<TestItemWithMediaDto> items, int langNo) {
+            List<TestItemWithMediaDto> items, int langNo, boolean multipleChoiceOnly) {
 
         List<Map<String, Object>> out = new ArrayList<>();
 
         for (TestItemWithMediaDto item : items) {
             // 미디어 정보로 타입 판별
             int questionType = detectQuestionType(item);
+
+            // ✅ 객관식만 필터링 옵션
+            if (multipleChoiceOnly && questionType == 2) {
+                System.out.printf("[FILTER] 주관식 문항 제외: testItemNo=%d%n", item.getTestItemNo());
+                continue; // 주관식(type=2)은 건너뛰기
+            }
 
             Map<String, Object> m = buildItemMap(item, questionType, langNo);
             out.add(m);
@@ -308,7 +314,7 @@ public class TestService {
     }
 
     /*
-     * [2-1] 무한모드: 완료한 studyNo들의 모든 문항 반환 (미디어 기반 타입 판별)
+     * [2-1] 무한모드: 완료한 studyNo들의 모든 문항 반환 (객관식만!)
      */
     public List<Map<String, Object>> getItemsByStudyNos(List<Integer> studyNos, int langNo) {
         List<TestItemWithMediaDto> allItems = new ArrayList<>();
@@ -319,16 +325,17 @@ public class TestService {
             allItems.addAll(items);
         }
 
-        // 미디어 기반 타입 판별 후 변환
-        return convertItemsWithMediaTypeDetection(allItems, langNo);
+        // ✅ 미디어 기반 타입 판별 후 객관식만 필터링
+        return convertItemsWithMediaTypeDetection(allItems, langNo, true);
     }
 
     /*
-     * [2-2] 하드모드: 전체 DB의 모든 문항 반환 (미디어 기반 타입 판별)
+     * [2-2] 하드모드: 전체 DB의 모든 문항 반환 (객관식만)
      */
     public List<Map<String, Object>> getAllItems(int langNo) {
         List<TestItemWithMediaDto> items = testMapper.findAllItems(langNo);
-        return convertItemsWithMediaTypeDetection(items, langNo);
+        // ✅ 미디어 기반 타입 판별 후 객관식만 필터링
+        return convertItemsWithMediaTypeDetection(items, langNo, true);
     }
 
 
