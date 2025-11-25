@@ -28,8 +28,8 @@ public class JwtUtil {
                 .claim("userNo", userNo)
                 .setIssuedAt( new Date() ) // 토큰이 발급된 날짜 , new Date() : 자바에서 제공하는 현재날짜 클래스
                 // 토큰 만료시간 , 밀리초(1000/1) , new Date( System.currentTimeMillis() ) : 현재시간의 밀리초
-                // new Date( System.currentTimeMillis() + ( 1000 * 초 * 분 * 시 ) )
-                .setExpiration( new Date( System.currentTimeMillis() + ( 1000 * 60 * 60 * 24 ) ) ) // 1일의 토큰 유지기간
+                // new Date( System.currentTimeMillis() + ( 1000 * 초 * 분 * 시 ) ) , 1일의 토큰 유지기간
+                .setExpiration( new Date( System.currentTimeMillis() + ( 1000 * 60 * 60 * 24 ) ) )
                 .signWith( secretKey ) // 지정한 비밀키로 암호화 한다.
                 .compact(); // 위 정보로 JWT 토큰 생성하고 반환한다.
 
