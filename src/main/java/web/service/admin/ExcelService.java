@@ -75,12 +75,13 @@ public class ExcelService {
 
         // 헤더 행 생성
         Row headerRow = sheet.createRow(0);
-        String[] headers = {"번호" , "장르" , "주제" , "한국어" , getLanguageName(lang2)};
+        String[] headers = {"번호" , "장르" , "주제" , "한국어" , getLanguageName(lang2) , "수정한 예문"};
 
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(headers[i]);
             cell.setCellStyle(headerStyle);
+
         }
 
         // 데이터 행 생성
@@ -114,12 +115,14 @@ public class ExcelService {
             createCell(row, 2 , themeKo , dataStyle);
             createCell(row, 3 , exam.getExamKo() , dataStyle);
             createCell(row, 4, getExamValue(exam, lang2) , dataStyle); // 다국어 데이터셀
+            createCell(row, 5, "수정 내용 없음 (※ 지우고 수정해주세요. )", dataStyle);
         }
 
         // 컬럼 너비 자동 조절
         for (int i = 0; i < headers.length; i++) {
             sheet.autoSizeColumn(i);
             sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 1000);
+            sheet.setColumnWidth(5, 60 * 256);
         }
 
     }
