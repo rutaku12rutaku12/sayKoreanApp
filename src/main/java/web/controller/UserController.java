@@ -11,14 +11,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import web.config.RecaptchaConfig;
 import web.model.dto.user.*;
+import web.model.mapper.admin.AdminReportMapper;
 import web.service.UserService;
 import web.util.AuthUtil;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -31,6 +34,7 @@ public class UserController {
 
     private final UserService userService;
     private final AuthUtil authUtil;
+    private AdminReportMapper adminReportMapper;
 
     @Value("${recaptcha.secretKey}")
     private String secretKey;
@@ -70,8 +74,54 @@ public class UserController {
             Object result = userService.logIn(loginDto , clientType , request );
 
             if( result == null ){
-                return ResponseEntity.status(401).body("로그인 실패");
+                return ResponseEntity.status(401).body(
+                        Map.of("error", "LOGIN_FAILED", "message", "이메일 또는 비밀번호가 올바르지 않습니다.")
+                );
             }
+
+            // 2단계: 사용자 정보 조회
+            UserDto user = userService.getUserByEmail(loginDto.getEmail());
+
+            if(user == null){
+                return ResponseEntity.status(401).body(
+                        Map.of("error", "USER_NOT_FOUND", "message", "사용자 정보를 찾을 수 없습니다.")
+                );
+            }
+
+            // ⭐ 3단계: 제재 여부 확인 (userState가 -2인 경우)
+            if (user.getUserState() == -2) {
+                log.info("제재된 계정 로그인 시도: userNo={}", user.getUserNo());
+
+                // 현재 제재 중인지 확인
+                boolean isRestricted = adminReportMapper.isRestricted(user.getUserNo());
+
+                if (isRestricted) {
+                    // 남은 제재 일수 조회
+                    Integer remainingDays = adminReportMapper.getRemainingRestrictDays(user.getUserNo());
+
+                    log.warn("제재 중인 사용자 로그인 차단: userNo={}, 남은 기간={}일",
+                            user.getUserNo(), remainingDays);
+
+                    // 제재 정보를 담은 에러 응답
+                    Map<String, Object> errorResponse = new HashMap<>();
+                    errorResponse.put("error", "ACCOUNT_RESTRICTED");
+                    errorResponse.put("message", "계정이 제재되었습니다.");
+                    errorResponse.put("remainingDays", remainingDays != null ? remainingDays : 0);
+                    errorResponse.put("userNo", user.getUserNo());
+
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+
+                } else {
+                    // 제재 기간이 지났으면 userState를 1(정상)로 복구
+                    log.info("제재 기간 만료, 계정 복구: userNo={}", user.getUserNo());
+                    userService.restoreUserState(user.getUserNo());
+
+                    // 복구 후 사용자 정보 다시 조회
+                    user = userService.getUserByEmail(loginDto.getEmail());
+                }
+            }
+
+            // 4단계 : 정상 로그인 처리
             // 플러터일 경우
             if ("flutter".equalsIgnoreCase(clientType)){
                 // JWT 토큰 반환

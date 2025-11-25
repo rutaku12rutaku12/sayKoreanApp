@@ -47,6 +47,7 @@ import Ranking from "./pages/Ranking.jsx";
 import "./styles/App.css";
 import AdminGameCreate from "./adminPages/AdminGameCreate.jsx";
 import AdminGameList from "./adminPages/AdminGameList.jsx";
+import AdminReportList from "./adminPages/AdminReportList.jsx";
 
 
 // 언어 변환 매핑
@@ -109,6 +110,7 @@ function App() {
             <Route path="character-training" element={<CharacterTraining />} />
             <Route path="game" element={<AdminGameList />} />
             <Route path="game/create" element={<AdminGameCreate />} />
+            <Route path="report" element={<AdminReportList />} />
           </Route>
 
           {/* 사용자단 */}

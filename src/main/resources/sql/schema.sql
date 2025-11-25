@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS study;
 DROP TABLE IF EXISTS genre;
 
 -- [App 테이블들]
+DROP TABLE IF EXISTS restrictRecord;
 DROP TABLE IF EXISTS friend;
 DROP TABLE IF EXISTS pointLog;
 DROP TABLE IF EXISTS pointPolicy;
@@ -376,7 +377,7 @@ CREATE TABLE IF NOT EXISTS friend (
 -- =====================================================================
 
 -- 신고메시지 (FK: messageNo)
-  CREATE TABLE IF NOT EXISTS reportMessage (
+CREATE TABLE IF NOT EXISTS reportMessage (
   reportNo        INT          NOT NULL AUTO_INCREMENT,
   messageNo       INT          NOT NULL,  -- 신고한 메시지 FK
   reporterNo      INT          NOT NULL,  -- 신고를 한 유저
@@ -402,6 +403,27 @@ CREATE TABLE IF NOT EXISTS friend (
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci;
 
+-- 제재 기록 테이블 생성
+CREATE TABLE IF NOT EXISTS restrictRecord (
+    restrictNo INT AUTO_INCREMENT PRIMARY KEY,
+    userNo INT NOT NULL,
+    restrictDay INT NOT NULL COMMENT '제재 일수',
+    restrictDate DATETIME DEFAULT NOW() COMMENT '제재 시작일',
+    restrictEndDate DATETIME NOT NULL COMMENT '제재 종료일',
+    restrictReason VARCHAR(500) DEFAULT '신고 승인으로 인한 제재' COMMENT '제재 사유',
+    FOREIGN KEY (userNo) REFERENCES users(userNo) ON DELETE CASCADE
+) COMMENT='사용자 제재 기록';
+
+-- 인덱스 추가 (검색 성능 향상)
+CREATE INDEX idx_userNo_endDate ON restrictRecord(userNo, restrictEndDate);
+
+-- reportMessage 테이블에 reportStatus 기본값 설정 (이미 있다면 생략)
+ALTER TABLE reportMessage
+MODIFY COLUMN reportStatus INT DEFAULT 0 COMMENT '0: 미처리, 1: 승인, 2: 거부';
+
+-- reportMessage 테이블에 인덱스 추가
+CREATE INDEX idx_reportStatus ON reportMessage(reportStatus);
+CREATE INDEX idx_reportTime ON reportMessage(reportTime DESC);
 
 
   -- 테마 마스터

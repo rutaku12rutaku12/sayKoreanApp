@@ -17,6 +17,9 @@ const initialState = {
     users: [],              // 전체 회원 목록
     currentUser: null,      // 선택된 회원 상세 정보
     userDashboard: null,    // 대시보드 통계
+    // 신고 관리 추가
+    reports: [],            // 신고 목록
+    reportStats: null,      // 신고 통계
 };
 
 // [2] 관리자 슬라이스 정의
@@ -123,7 +126,28 @@ const adminSlice = createSlice({
             if (index != -1) {
                 state.users[index].urole = urole;
             }
-        }
+        },
+
+        // 신고 관리 리듀서
+        setReports: (state, action) => {
+            state.reports = action.payload;
+        },
+
+        setReportStats: (state, action) => {
+            state.reportStats = action.payload;
+        },
+
+        updateReportStatus: (state, action) => {
+            const { reportNo, status } = action.payload;
+            const index = state.reports.findIndex(r => r.reportNo === reportNo);
+            if (index !== -1) {
+                state.reports[index].reportStatus = status;
+            }
+        },
+
+        removeReport: (state, action) => {
+            state.reports = state.reports.filter(r => r.reportNo !== action.payload);
+        },
     },
 });
 
@@ -163,6 +187,11 @@ export const {
     deleteUser,
     restrictUser,
     updateUserRole,
+    // 신고 관리 액션
+    setReports,
+    setReportStats,
+    updateReportStatus,
+    removeReport,
 } = adminSlice.actions;
 
 // [4] 다른 컴포넌트에서 불러올 수 있도록 export
