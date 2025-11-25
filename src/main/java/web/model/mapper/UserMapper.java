@@ -69,28 +69,28 @@ public interface UserMapper {
     @Select("select email from users where userNo = #{userNo}")
     String findEmailByUserNo(@Param("userNo") int userNo);
 
-    /**
-     * 이메일로 사용자 조회
-     */
-    @Select("""
-    SELECT 
-        userNo, name, email, password, nickName, phone,
-        signupMethod, userState, userDate, userUpdate, 
-        genreNo, uid, urole
-    FROM users
-    WHERE email = #{email}
-    """)
-    UserDto findByEmail(String email);
-
-    /**
-     * 사용자 상태 업데이트
-     */
-    @Update("""
-    UPDATE users
-    SET userState = #{state}
-    WHERE userNo = #{userNo}
-    """)
-    int updateUserState(@Param("userNo") int userNo, @Param("state") int state);
+//    /**
+//     * 이메일로 사용자 조회
+//     */
+//    @Select("""
+//    SELECT
+//        userNo, name, email, password, nickName, phone,
+//        signupMethod, userState, userDate, userUpdate,
+//        uid, urole
+//    FROM users
+//    WHERE email = #{email}
+//    """)
+//    UserDto findByEmail(String email);
+//
+//    /**
+//     * 사용자 상태 업데이트
+//     */
+//    @Update("""
+//    UPDATE users
+//    SET userState = #{state}
+//    WHERE userNo = #{userNo}
+//    """)
+//    int updateUserState(@Param("userNo") int userNo, @Param("state") int state);
 
 
 //    // getGenre

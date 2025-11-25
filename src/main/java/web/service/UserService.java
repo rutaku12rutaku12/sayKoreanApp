@@ -298,27 +298,27 @@ public class UserService {
         }
     }
 
-    /**
-     * 이메일로 사용자 조회
-     */
-    public UserDto getUserByEmail(String email) {
-        UserDto user = userMapper.findByEmail(email);
-        if (user == null) {
-            throw new RuntimeException("사용자를 찾을 수 없습니다.");
-        }
-        return user;
-    }
-
-    /**
-     * 제재 기간 만료 시 사용자 상태 복구
-     */
-    public void restoreUserState(int userNo) {
-        int result = userMapper.updateUserState(userNo, 1); // userState를 1(정상)으로 변경
-        if (result == 0) {
-            throw new RuntimeException("사용자 상태 복구에 실패했습니다.");
-        }
-        log.info("사용자 상태 복구: userNo={}", userNo);
-    }
+//    /**
+//     * 이메일로 사용자 조회
+//     */
+//    public UserDto getUserByEmail(String email) {
+//        UserDto user = userMapper.findByEmail(email);
+//        if (user == null) {
+//            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+//        }
+//        return user;
+//    }
+//
+//    /**
+//     * 제재 기간 만료 시 사용자 상태 복구
+//     */
+//    public void restoreUserState(int userNo) {
+//        int result = userMapper.updateUserState(userNo, 1); // userState를 1(정상)으로 변경
+//        if (result == 0) {
+//            throw new RuntimeException("사용자 상태 복구에 실패했습니다.");
+//        }
+//        log.info("사용자 상태 복구: userNo={}", userNo);
+//    }
 
 
 //    // getGenreNo
