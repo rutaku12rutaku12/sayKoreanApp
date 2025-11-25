@@ -137,8 +137,8 @@ clean {
     delete file("${project.projectDir}/src/main/saykorean/dist")
 }
 
-// --- Task 의존성 설정 (이전과 동일) ---
-processResources {
-    dependsOn copyReactBuild
-}
+//// --- Task 의존성 설정 (이전과 동일) ---
+//processResources {
+//    dependsOn copyReactBuild
+//}
 
