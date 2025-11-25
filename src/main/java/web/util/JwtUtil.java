@@ -78,7 +78,23 @@ public class JwtUtil {
         return null; // 유효하지 않은 토큰 또는 오류 발생시 null 반환
     } // f end
 
-    // [4] 토큰 유효성 검사 (boolean 반환)
+    // [4] 토큰에서 이메일 추출
+    public String getEmail(String token){
+        try{
+            Claims claims = Jwts.parser()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            return claims.getSubject();
+        } catch (Exception e) {
+            System.out.println(" >> 토큰에서 이메일 추출 실패: "+ e.getMessage());
+            return null;
+        }
+    }
+
+    // [5] 토큰 유효성 검사 (boolean 반환)
     public boolean isTokenValid(String token){
         try{
             Jwts.parser()
@@ -94,20 +110,6 @@ public class JwtUtil {
             return false;
         }
     }
-    // [5] 토큰에서 이메일 추출
-    public String getEmail(String token){
-        try{
-            Claims claims = Jwts.parser()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
 
-            return claims.getSubject();
-        } catch (Exception e) {
-            System.out.println(" >> 토큰에서 이메일 추출 실패: "+ e.getMessage());
-            return null;
-        }
-    }
 
 } // class end
