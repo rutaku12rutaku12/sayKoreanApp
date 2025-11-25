@@ -263,6 +263,8 @@ public class TestService {
         return m;
     }
 
+
+
     /*
      * ========================================
      * 핵심 헬퍼 메서드: 미디어 기반 타입 판별
@@ -292,13 +294,19 @@ public class TestService {
      * 무한/하드모드용: 미디어 기반 타입 판별로 문항 변환
      */
     private List<Map<String, Object>> convertItemsWithMediaTypeDetection(
-            List<TestItemWithMediaDto> items, int langNo) {
+            List<TestItemWithMediaDto> items, int langNo, boolean multipleChoiceOnly) {
 
         List<Map<String, Object>> out = new ArrayList<>();
 
         for (TestItemWithMediaDto item : items) {
             // 미디어 정보로 타입 판별
             int questionType = detectQuestionType(item);
+
+            // ✅ 객관식만 필터링 옵션
+            if (multipleChoiceOnly && questionType == 2) {
+                System.out.printf("[FILTER] 주관식 문항 제외: testItemNo=%d%n", item.getTestItemNo());
+                continue; // 주관식(type=2)은 건너뛰기
+            }
 
             Map<String, Object> m = buildItemMap(item, questionType, langNo);
             out.add(m);
@@ -308,27 +316,99 @@ public class TestService {
     }
 
     /*
-     * [2-1] 무한모드: 완료한 studyNo들의 모든 문항 반환 (미디어 기반 타입 판별)
+     * ========================================
+     * 무한/하드모드용: 모든 문항을 객관식으로 변환
+     * ========================================
+     */
+    private List<Map<String, Object>> convertItemsForInfiniteHardMode(
+            List<TestItemWithMediaDto> items, int langNo) {
+
+        List<Map<String, Object>> out = new ArrayList<>();
+
+        for (TestItemWithMediaDto item : items) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("testItemNo", item.getTestItemNo());
+            m.put("testNo", item.getTestNo());
+            m.put("questionSelected", item.getQuestionSelected());
+
+            // ✅ 그림+음성 모두 표시
+            m.put("imageName", item.getImageName());
+            m.put("imagePath", item.getImagePath());
+            m.put("audios", item.getAudios());
+
+            ExamDto correct = testMapper.findExamByNo(item.getExamNo(), langNo);
+            if (correct != null) {
+                m.put("examSelected", correct.getExamSelected());
+                m.put("examKo", correct.getExamKo());
+
+                // ✅ 무한/하드모드는 무조건 객관식 options 생성
+                m.put("options", buildOptions(correct, item.getExamNo(), langNo));
+            }
+
+            out.add(m);
+        }
+
+        return out;
+    }
+
+    /*
+     * ========================================
+     * 객관식 보기 생성 (정답 1개 + 오답 2개)
+     * ========================================
+     */
+    private List<Map<String, Object>> buildOptions(ExamDto correct, int correctExamNo, int langNo) {
+        List<Map<String, Object>> options = new ArrayList<>();
+
+        // 1) 정답 옵션
+        Map<String, Object> correctOption = new HashMap<>();
+        correctOption.put("examNo", correct.getExamNo());
+        correctOption.put("examSelected", correct.getExamSelected());
+        correctOption.put("examKo", correct.getExamKo());
+        correctOption.put("isCorrect", true);
+        options.add(correctOption);
+
+        // 2) 오답 2개 랜덤 조회
+        List<ExamDto> wrongs = testMapper.findRandomExamsExcludingWithLang(
+                correctExamNo, 2, langNo
+        );
+
+        // 3) 오답 옵션 구성
+        for (ExamDto w : wrongs) {
+            Map<String, Object> wrongOption = new HashMap<>();
+            wrongOption.put("examNo", w.getExamNo());
+            wrongOption.put("examSelected", w.getExamSelected());
+            wrongOption.put("examKo", w.getExamKo());
+            wrongOption.put("isCorrect", false);
+            options.add(wrongOption);
+        }
+
+        // 4) 보기 순서 섞기
+        Collections.shuffle(options);
+
+        return options;
+    }
+
+
+    /*
+     * [2-1] 무한모드: 완료한 studyNo들의 모든 문항 반환 (객관식만, 그림+음성 모두 표시)
      */
     public List<Map<String, Object>> getItemsByStudyNos(List<Integer> studyNos, int langNo) {
         List<TestItemWithMediaDto> allItems = new ArrayList<>();
 
-        // 모든 studyNo의 문항 수집
         for (int studyNo : studyNos) {
             List<TestItemWithMediaDto> items = testMapper.findItemsByStudyNo(studyNo, langNo);
             allItems.addAll(items);
         }
 
-        // 미디어 기반 타입 판별 후 변환
-        return convertItemsWithMediaTypeDetection(allItems, langNo);
+        return convertItemsForInfiniteHardMode(allItems, langNo);
     }
 
     /*
-     * [2-2] 하드모드: 전체 DB의 모든 문항 반환 (미디어 기반 타입 판별)
+     * [2-2] 하드모드: 전체 DB의 모든 문항 반환 (객관식만, 그림+음성 모두 표시)
      */
     public List<Map<String, Object>> getAllItems(int langNo) {
         List<TestItemWithMediaDto> items = testMapper.findAllItems(langNo);
-        return convertItemsWithMediaTypeDetection(items, langNo);
+        return convertItemsForInfiniteHardMode(items, langNo);
     }
 
 
@@ -414,7 +494,6 @@ public class TestService {
 
         // testItemNo에 해당하는 문항과 그 인덱스 찾기
         TestItemWithMediaDto item = null;
-        int itemIndex = -1;
         int questionType;
 
         // [추가] ===== 타입 판별: 정기시험 vs 무한/하드모드 =====
@@ -427,10 +506,9 @@ public class TestService {
                 throw new IllegalArgumentException("잘못된 testItemNo 입니다.");
             }
 
-            // 무한/하드모드: 미디어 기반
-            questionType = detectQuestionType(item);
-            System.out.printf("[DEBUG] 무한/하드모드 - testItemNo=%d, 미디어 기반 타입=%d%n",
-                    testItemNo, questionType);
+            // 무한/하드모드는 모두 객관식(0으로 처리)
+            questionType = 0;
+            System.out.printf("[DEBUG] 무한/하드모드 - testItemNo=%d, 타입=객관식%n", testItemNo);
 
         } else {
             // 정기시험: 순서 기반 (기존 로직)
@@ -438,6 +516,7 @@ public class TestService {
             //    - 모든 문항을 가져온 뒤 특정 testItemNo를 가진 문항을 탐색
             //    - (성능 최적화 여지) mapper에 단건 조회 API를 추가해도 좋음
             List<TestItemWithMediaDto> allItems = testMapper.findTestItemsWithMedia(testNo, langNo);
+            int itemIndex = -1;
 
             // testItemNo에 해당하는 문항 찾기
             for (int i = 0; i < allItems.size(); i++) {

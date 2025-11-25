@@ -9,6 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.extern.slf4j.Slf4j;
 import web.model.dto.point.PointDto;
 import web.model.dto.point.PointRecordDto;
 import web.model.dto.user.*;
@@ -22,6 +23,7 @@ import java.util.Random;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserMapper userMapper;
@@ -295,6 +297,28 @@ public class UserService {
             throw new RuntimeException("회원 탈퇴 처리 중 오류 발생: " + e.getMessage() , e);
         }
     }
+
+//    /**
+//     * 이메일로 사용자 조회
+//     */
+//    public UserDto getUserByEmail(String email) {
+//        UserDto user = userMapper.findByEmail(email);
+//        if (user == null) {
+//            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+//        }
+//        return user;
+//    }
+//
+//    /**
+//     * 제재 기간 만료 시 사용자 상태 복구
+//     */
+//    public void restoreUserState(int userNo) {
+//        int result = userMapper.updateUserState(userNo, 1); // userState를 1(정상)으로 변경
+//        if (result == 0) {
+//            throw new RuntimeException("사용자 상태 복구에 실패했습니다.");
+//        }
+//        log.info("사용자 상태 복구: userNo={}", userNo);
+//    }
 
 
 //    // getGenreNo

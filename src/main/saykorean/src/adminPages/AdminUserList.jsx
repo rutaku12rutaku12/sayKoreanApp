@@ -166,13 +166,14 @@ export default function AdminUserList() {
 
     return (<>
         <div className="admin-container">
+
             <div className="admin-header">
                 <h2>회원 관리</h2>
                 <button
-                    onClick={() => navigate('/admin')}
-                    className="admin-btn admin-btn-secondary"
+                    onClick={() => navigate('/admin/report')}
+                    className="admin-btn admin-btn-success"
                 >
-                    관리자 홈
+                    회원 신고 확인
                 </button>
             </div>
 

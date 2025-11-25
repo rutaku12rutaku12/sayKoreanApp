@@ -646,6 +646,16 @@ INSERT INTO theme (theme_name, price) VALUES
     ('다크 테마', 2000),
     ('민트 테마', 2000);
 
+INSERT INTO restrictRecord (userNo, restrictDay, restrictDate, restrictEndDate, restrictReason)
+VALUES
+    (1, 3, '2025-01-10 09:00:00', '2025-01-13 09:00:00', '욕설 신고로 인한 제재'),
+    (1, 7, '2025-02-02 12:30:00', '2025-02-09 12:30:00', '여러 차례 누적 신고에 의한 제재'),
+    (2, 1, '2025-01-05 14:20:00', '2025-01-06 14:20:00', '부적절한 콘텐츠 업로드'),
+    (3, 14, '2025-02-01 08:00:00', '2025-02-15 08:00:00', '커뮤니티 규칙 위반'),
+    (4, 30, '2025-01-20 18:00:00', '2025-02-19 18:00:00', '악성 행위 반복으로 인한 장기 제재'),
+    (5, 2, '2025-02-10 10:00:00', '2025-02-12 10:00:00', '신고 승인으로 인한 제재'),
+    (6, 5, '2025-01-28 22:00:00', '2025-02-02 22:00:00', '부적절한 채팅 메시지');
+
 
 select * from genre;
 select * from study;
@@ -664,3 +674,4 @@ SELECT * FROM chat;
 SELECT * FROM pointPolicy;
 SELECT * FROM pointLog;
 SELECT * FROM friend;
+SELECT * FROM restrictRecord;
