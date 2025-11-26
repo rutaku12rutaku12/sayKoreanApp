@@ -26,7 +26,7 @@ public class StoreService {
             throw new IllegalStateException("이미 구매한 테마입니다.");
         }
 
-        // 2. 포인트 차감 (예: pointNo = 6 이 '테마 구매' 정책이라고 가정)
+        // 2. 포인트 차감
         PointRecordDto record = new PointRecordDto();
         record.setUserNo(userNo);
         record.setPointNo(6);   // 테마 구매용 pointNo
