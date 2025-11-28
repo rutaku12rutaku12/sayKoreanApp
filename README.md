@@ -1,4 +1,4 @@
-# <img src="https://github.com/rutaku12rutaku12/sayKoreanApp/blob/dongjin/src/main/saykorean/public/img/hosuni.png" width="100" height="100"/> 재밌는한국어 
+# <img src="https://github.com/user-attachments/assets/7e36b0d3-34f1-4fa8-a576-ddd434e96247" width="100" height="100"/> 재밌는한국어 
 
 ## 💻 프로젝트 소개
 - **프로젝트 완성일**: 2025.11.27
